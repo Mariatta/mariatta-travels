@@ -36,9 +36,9 @@ export const washingtonDc: CityData = {
 
   days: [
     {
-      dayNum: 1, date: 'March 22 (Sun)', title: 'Travel Day — YVR to DCA',
+      dayNum: 1, date: 'March 22 (Sun)', title: 'Travel Day — YVR to IAD',
       activities: [
-        { description: 'Fly YVR → DCA (or IAD) — travel day', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Reagan+National+Airport' },
+        { description: 'Fly YVR → IAD (Dulles) — travel day', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Washington+Dulles+International+Airport' },
         { description: 'Check in to Arc Hotel, Foggy Bottom', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Arc+Hotel+Washington+DC' },
         { description: 'Light dinner near campus; rest before conference days' },
       ],
@@ -61,7 +61,7 @@ export const washingtonDc: CityData = {
     {
       dayNum: 4, date: 'March 25 (Wed)', title: 'Departure',
       activities: [
-        { description: 'Check out of Arc Hotel; head to DCA/IAD' },
+        { description: 'Check out of Arc Hotel; head to IAD (Dulles)' },
         { description: 'Flight home to YVR' },
       ],
     },

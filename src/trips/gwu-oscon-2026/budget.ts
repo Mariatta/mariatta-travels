@@ -7,7 +7,7 @@ export const budgetData: BudgetCategory[] = [
     emoji: '✈️',
     type: 'pre-trip',
     items: [
-      { id: 'flights-roundtrip', label: 'YVR to DCA/IAD round-trip', estimated: 900, currency: 'CAD', note: 'Cross-country flight' },
+      { id: 'flights-roundtrip', label: 'YVR to IAD (Dulles) round-trip', estimated: 900, currency: 'CAD', note: 'Cross-country flight' },
     ],
   },
   {
@@ -34,7 +34,7 @@ export const budgetData: BudgetCategory[] = [
     emoji: '🚇',
     type: 'during-trip',
     items: [
-      { id: 'airport-transfer', label: 'DCA/IAD airport transfers', estimated: 80, currency: 'USD', note: 'Rideshare or Metro' },
+      { id: 'airport-transfer', label: 'IAD (Dulles) airport transfers', estimated: 100, currency: 'USD', note: 'Rideshare — Dulles is ~45 min from Foggy Bottom' },
       { id: 'metro', label: 'Metro / rideshare around DC', estimated: 40, currency: 'USD' },
     ],
   },

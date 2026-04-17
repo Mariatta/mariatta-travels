@@ -17,7 +17,7 @@ export const checklistData: ChecklistCategory[] = [
     title: 'Travel',
     emoji: '✈️',
     items: [
-      { id: 'flights', label: 'Book YVR to DCA/IAD round-trip (travel Mar 22, return Mar 25)' },
+      { id: 'flights', label: 'Book YVR to IAD (Dulles) round-trip (travel Mar 22, return Mar 25)' },
       { id: 'hotel-arc', label: 'Book Arc Hotel Washington DC (3 nights)' },
       { id: 'passport', label: 'Passport valid for US entry' },
       { id: 'insurance', label: 'Travel medical insurance' },
