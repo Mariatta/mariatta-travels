@@ -1,0 +1,53 @@
+---
+import type { TripConfig } from '../../data/types';
+
+interface Props {
+  trip: TripConfig;
+}
+const { trip } = Astro.props;
+---
+<header class="hero" style={`--accent: ${trip.accentColor}`}>
+  <div class="hero-inner">
+    <p class="hero-eyebrow">{trip.datesLabel}</p>
+    <h1 class="hero-title">
+      <span class="hero-emoji" aria-hidden="true">{trip.emoji}</span>
+      {trip.title}
+    </h1>
+    <p class="hero-tagline">{trip.tagline}</p>
+  </div>
+  <div class="hero-accent-bar"></div>
+</header>
+
+<style>
+  .hero {
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    border-bottom: 1px solid var(--cream-dark);
+    position: relative;
+    background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(0,0,0,0.03), transparent);
+  }
+  .hero-inner { max-width: 760px; margin: 0 auto; }
+  .hero-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 8vw, 5.5rem);
+    font-weight: 300;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+  }
+  .hero-emoji { font-size: 0.9em; }
+  .hero-tagline { font-size: 1.1rem; color: var(--ink-muted); line-height: 1.6; }
+  .hero-accent-bar {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 3px; border-radius: 2px; background: var(--accent);
+  }
+  @media (max-width: 600px) { .hero { padding: 4rem 1.5rem 3rem; } }
+</style>

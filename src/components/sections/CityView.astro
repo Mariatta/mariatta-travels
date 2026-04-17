@@ -1,0 +1,141 @@
+---
+import HotelCard from '../HotelCard.astro';
+import RestaurantCard from '../RestaurantCard.astro';
+import DayCard from '../DayCard.astro';
+import MapSection from '../MapSection.astro';
+import VenueBlock from './VenueBlock.astro';
+import IceCreamSpots from './IceCreamSpots.astro';
+import type { CityData } from '../../data/types';
+
+interface Props {
+  city: CityData;
+  showHero?: boolean;
+}
+const { city, showHero = true } = Astro.props;
+---
+{showHero && (
+  <header class="city-hero" style={`--city-accent: ${city.accentColor}`}>
+    <div class="city-hero-inner">
+      <p class="city-eyebrow">{city.dates} · {city.nights} {city.nights === 1 ? 'night' : 'nights'}</p>
+      <h1 class="city-title">{city.name}</h1>
+      <p class="city-tagline">{city.tagline}</p>
+    </div>
+    <div class="city-hero-accent-bar" style={`background: ${city.accentColor}`}></div>
+  </header>
+)}
+
+<section class="section">
+  <div class="container">
+    <div class="section-label">Overview</div>
+    <h2 class="section-title">{city.name} at a glance</h2>
+    <p class="section-intro">Attractions, hotels and restaurants — all on one map.</p>
+    <MapSection mapCenter={city.mapCenter} mapZoom={city.mapZoom} mapPoints={city.mapPoints} accentColor={city.accentColor} />
+  </div>
+</section>
+
+{city.venue && (
+  <section class="section section-alt" id="event-venue">
+    <div class="container">
+      <div class="section-label">Event Venue</div>
+      <h2 class="section-title">{city.venue.eventName}</h2>
+      <p class="section-intro">Where the event happens — logistics, address, and access details all in one place.</p>
+      <VenueBlock venue={city.venue} accentColor={city.accentColor} />
+    </div>
+  </section>
+)}
+
+{city.iceCreamSpots && city.iceCreamSpots.length > 0 && (
+  <IceCreamSpots spots={city.iceCreamSpots} accentColor={city.accentColor} />
+)}
+
+{city.days.length > 0 && (
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-label">Day by Day</div>
+      <h2 class="section-title">The itinerary</h2>
+      <div class="days-grid">
+        {city.days.map(d => <DayCard day={d} accentColor={city.accentColor} />)}
+      </div>
+      {city.transport && (
+        <div class="transport-bar" style={`border-left-color: ${city.accentColor}; background: ${city.accentColor}0D`}>
+          <span class="transport-icon">🚆</span>
+          <p class="transport-text">{city.transport}</p>
+        </div>
+      )}
+    </div>
+  </section>
+)}
+
+{city.hotels.length > 0 && (
+  <section class="section">
+    <div class="container">
+      <div class="section-label">Where to Stay</div>
+      <h2 class="section-title">Hotels in {city.name}</h2>
+      <div class="cards-grid">
+        {city.hotels.map(h => <HotelCard hotel={h} />)}
+      </div>
+    </div>
+  </section>
+)}
+
+{city.restaurants.length > 0 && (
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-label">Where to Eat</div>
+      <h2 class="section-title">Restaurants in {city.name}</h2>
+      <div class="cards-grid">
+        {city.restaurants.map(r => <RestaurantCard restaurant={r} />)}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .city-hero {
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    border-bottom: 1px solid var(--cream-dark);
+    position: relative;
+    background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(0,0,0,0.03), transparent);
+  }
+  .city-hero-inner { max-width: 700px; margin: 0 auto; }
+  .city-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--city-accent);
+    margin-bottom: 1rem;
+  }
+  .city-title {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 12vw, 8rem);
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 0.9;
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+  .city-tagline { font-size: 1.05rem; color: var(--ink-muted); font-weight: 300; line-height: 1.6; }
+  .city-hero-accent-bar {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 3px; border-radius: 2px;
+  }
+  .section { padding: 4rem 2rem; }
+  .section-alt { background: white; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--pt-green); margin-bottom: 0.75rem; }
+  .section-title { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 300; color: var(--ink); margin-bottom: 1rem; }
+  .section-intro { font-size: 1rem; color: var(--ink-muted); max-width: 600px; margin-bottom: 2.5rem; line-height: 1.75; }
+  .days-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .transport-bar { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem 1.25rem; border-left: 3px solid; border-radius: 0 var(--radius) var(--radius) 0; }
+  .transport-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .transport-text { font-size: 0.875rem; color: var(--ink-muted); }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+
+  @media (max-width: 600px) {
+    .city-hero { padding: 4rem 1.5rem 3rem; }
+    .section { padding: 2.5rem 1.25rem; }
+    .days-grid, .cards-grid { grid-template-columns: 1fr; }
+  }
+</style>

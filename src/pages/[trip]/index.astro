@@ -1,0 +1,36 @@
+---
+import TripLayout from '../../layouts/TripLayout.astro';
+import TripHero from '../../components/sections/TripHero.astro';
+import CitiesGrid from '../../components/sections/CitiesGrid.astro';
+import CityView from '../../components/sections/CityView.astro';
+import TripStats from '../../components/sections/TripStats.astro';
+import TripTips from '../../components/sections/TripTips.astro';
+import EventCallout from '../../components/sections/EventCallout.astro';
+import { trips } from '../../data/trips';
+
+export function getStaticPaths() {
+  return trips.map(t => ({ params: { trip: t.id }, props: { trip: t } }));
+}
+
+const { trip } = Astro.props;
+---
+<TripLayout trip={trip} section="home" pageTitle={trip.title}>
+  <TripHero trip={trip} />
+
+  {trip.stats && trip.stats.length > 0 && <TripStats stats={trip.stats} />}
+
+  {trip.type === 'family' && trip.cities.length > 1 && (
+    <>
+      <EventCallout tripId={trip.id} cities={trip.cities} accentColor={trip.accentColor} />
+      <CitiesGrid tripId={trip.id} cities={trip.cities} />
+    </>
+  )}
+
+  {(trip.type === 'conference' || trip.cities.length === 1) && trip.cities[0] && (
+    <CityView city={trip.cities[0]} showHero={false} />
+  )}
+
+  {trip.tips && trip.tips.length > 0 && (
+    <TripTips categories={trip.tips} accentColor={trip.accentColor} />
+  )}
+</TripLayout>

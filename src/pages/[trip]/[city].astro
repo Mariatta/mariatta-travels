@@ -1,0 +1,24 @@
+---
+import TripLayout from '../../layouts/TripLayout.astro';
+import CityView from '../../components/sections/CityView.astro';
+import { trips } from '../../data/trips';
+
+export function getStaticPaths() {
+  const paths = [];
+  for (const trip of trips) {
+    if (trip.type !== 'family' || trip.cities.length <= 1) continue;
+    for (const city of trip.cities) {
+      paths.push({
+        params: { trip: trip.id, city: city.slug },
+        props: { trip, city },
+      });
+    }
+  }
+  return paths;
+}
+
+const { trip, city } = Astro.props;
+---
+<TripLayout trip={trip} section="home" pageTitle={`${city.name} — ${trip.shortTitle}`} pageLabel={city.name} currentCity={city}>
+  <CityView city={city} />
+</TripLayout>

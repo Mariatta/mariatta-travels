@@ -1,0 +1,102 @@
+---
+import type { Day } from '../data/types';
+const { day, accentColor } = Astro.props as { day: Day; accentColor: string };
+---
+
+<div class="day-card">
+  <div class="day-header" style={`border-left-color: ${accentColor}`}>
+    <div class="day-meta">
+      <span class="day-num">Day {day.dayNum}</span>
+      <span class="day-date">{day.date}</span>
+    </div>
+    <h3 class="day-title">{day.title}</h3>
+  </div>
+  <ul class="activities">
+    {day.activities.map(a => (
+      <li class="activity">
+        <span class="activity-dot" style={`background: ${accentColor}`}></span>
+        <span class="activity-text">
+          {a.description}
+          {(a.url || a.mapUrl) && (
+            <span class="activity-links">
+              {a.url && <a href={a.url} target="_blank" rel="noopener" class="activity-link" title="Website">↗</a>}
+              {a.mapUrl && <a href={a.mapUrl} target="_blank" rel="noopener" class="activity-link activity-map-link" title="View on map">Map</a>}
+            </span>
+          )}
+        </span>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .day-card {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .day-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .day-header {
+    padding: 1rem 1.25rem 0.75rem;
+    border-left: 3px solid;
+  }
+  .day-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+  }
+  .day-num {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .day-date {
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+  }
+  .day-title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .activities {
+    list-style: none;
+    padding: 0.75rem 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .activity {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+  .activity-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 0.45rem;
+    opacity: 0.7;
+  }
+  .activity-text { font-size: 0.875rem; color: var(--ink-muted); line-height: 1.55; }
+  .activity-links { display: inline; margin-left: 0.4rem; white-space: nowrap; }
+  .activity-link {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--ink-faint);
+    padding: 0.1rem 0.35rem;
+    border: 1px solid var(--cream-dark);
+    border-radius: 4px;
+    transition: color 0.2s, border-color 0.2s;
+    margin-left: 0.15rem;
+  }
+  .activity-link:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .activity-map-link { letter-spacing: 0.03em; }
+</style>

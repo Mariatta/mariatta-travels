@@ -1,0 +1,60 @@
+---
+interface Crumb {
+  label: string;
+  href?: string;
+}
+interface Props {
+  crumbs: Crumb[];
+}
+const { crumbs } = Astro.props;
+---
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <div class="breadcrumb-inner">
+    <ol>
+      {crumbs.map((c, i) => (
+        <li>
+          {c.href && i < crumbs.length - 1
+            ? <a href={c.href}>{c.label}</a>
+            : <span aria-current={i === crumbs.length - 1 ? 'page' : undefined}>{c.label}</span>}
+          {i < crumbs.length - 1 && <span class="sep" aria-hidden="true">›</span>}
+        </li>
+      ))}
+    </ol>
+  </div>
+</nav>
+
+<style>
+  .breadcrumb {
+    border-bottom: 1px solid var(--cream-dark);
+    background: var(--cream);
+    padding: 0 2rem;
+  }
+  .breadcrumb-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0.5rem 0;
+  }
+  ol {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+  }
+  li { display: inline-flex; gap: 0.4rem; align-items: center; }
+  a {
+    color: var(--ink-muted);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  a:hover { color: var(--pt-green); text-decoration: underline; text-underline-offset: 2px; }
+  .sep { color: var(--ink-faint); }
+  [aria-current="page"] { color: var(--ink); font-weight: 400; }
+
+  @media (max-width: 600px) {
+    .breadcrumb { padding: 0 1rem; }
+  }
+</style>

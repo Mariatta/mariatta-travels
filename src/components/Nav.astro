@@ -1,0 +1,16 @@
+---
+interface Props {
+  current?: 'home' | 'about';
+}
+const { current } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href={base}>✈️ Mariatta Travels</a>
+    <ul class="nav-links">
+      <li><a href={base} class={current === 'home' ? 'active' : ''}>All trips</a></li>
+      <li><a href={`${base}about/`} class={current === 'about' ? 'active' : ''}>About</a></li>
+    </ul>
+  </div>
+</nav>

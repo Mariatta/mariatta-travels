@@ -1,0 +1,145 @@
+---
+import type { Venue } from '../../data/types';
+
+interface Props {
+  venue: Venue;
+  accentColor: string;
+}
+const { venue, accentColor } = Astro.props;
+---
+<div class="venue-card" style={`--accent: ${accentColor}; border-left-color: ${accentColor}`}>
+  <div class="venue-header">
+    <div>
+      <h3 class="venue-name">{venue.name}</h3>
+      {venue.neighbourhood && <p class="venue-neighbourhood">{venue.neighbourhood}</p>}
+    </div>
+    {venue.website && (
+      <a href={venue.website} target="_blank" rel="noopener" class="venue-website">Visit website →</a>
+    )}
+  </div>
+
+  <dl class="venue-details">
+    <div class="venue-detail">
+      <dt>📍 Address</dt>
+      <dd>
+        {venue.address}
+        {venue.mapUrl && (<> · <a href={venue.mapUrl} target="_blank" rel="noopener">Open in Maps</a></>)}
+      </dd>
+    </div>
+    <div class="venue-detail">
+      <dt>📅 Dates</dt>
+      <dd>{venue.dates}</dd>
+    </div>
+    {venue.hours && (
+      <div class="venue-detail">
+        <dt>🕘 Hours</dt>
+        <dd>{venue.hours}</dd>
+      </div>
+    )}
+    {venue.nearestTransit && (
+      <div class="venue-detail">
+        <dt>🚇 Transit</dt>
+        <dd>{venue.nearestTransit}</dd>
+      </div>
+    )}
+    {venue.accessNotes && (
+      <div class="venue-detail">
+        <dt>🪪 Access</dt>
+        <dd>{venue.accessNotes}</dd>
+      </div>
+    )}
+    {venue.contact && (
+      <div class="venue-detail">
+        <dt>✉️ Contact</dt>
+        <dd set:html={venue.contact}></dd>
+      </div>
+    )}
+  </dl>
+</div>
+
+<style>
+  .venue-card {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-left: 4px solid;
+    border-radius: var(--radius-lg);
+    padding: 1.75rem 2rem;
+  }
+  .venue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+  .venue-name {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .venue-neighbourhood {
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 0.35rem;
+  }
+  .venue-website {
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .venue-website:hover { text-decoration: underline; }
+
+  .venue-details {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    margin: 0;
+  }
+  @media (min-width: 640px) {
+    .venue-details { grid-template-columns: repeat(2, 1fr); gap: 0.5rem 0.6rem; }
+  }
+  @media (min-width: 900px) {
+    .venue-details { grid-template-columns: repeat(3, 1fr); gap: 0.5rem 0.6rem; }
+  }
+  .venue-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .venue-detail dt {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .venue-detail dd {
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .venue-detail dd :global(a),
+  .venue-detail dd a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    font-weight: 500;
+  }
+  .venue-detail dd :global(a:hover),
+  .venue-detail dd a:hover { text-decoration-thickness: 2px; }
+
+  @media (max-width: 600px) {
+    .venue-card { padding: 1.5rem; }
+  }
+</style>

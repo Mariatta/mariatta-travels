@@ -1,0 +1,181 @@
+---
+import TripLayout from '../../layouts/TripLayout.astro';
+import { trips } from '../../data/trips';
+
+export function getStaticPaths() {
+  return trips
+    .filter(t => t.sections.includes('checklist'))
+    .map(t => ({ params: { trip: t.id }, props: { trip: t } }));
+}
+
+const { trip } = Astro.props;
+const totalItems = trip.checklist.reduce((sum, cat) => sum + cat.items.length, 0);
+const storageKey = `travels-checklist-${trip.id}`;
+---
+<TripLayout trip={trip} section="checklist" pageTitle={`${trip.shortTitle} · Checklist`} pageLabel="Checklist">
+  <header class="checklist-hero" style={`--accent: ${trip.accentColor}`}>
+    <div class="checklist-hero-inner">
+      <p class="checklist-eyebrow">Planning Progress</p>
+      <h1 class="checklist-title">Trip Checklist</h1>
+      <p class="checklist-subtitle">Track everything you need to book, pack, and prepare before departure.</p>
+      <div class="progress-container">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <p class="progress-text" id="progress-text">0 of {totalItems} complete</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    {trip.checklist.map((cat, i) => (
+      <section class={`section ${i % 2 === 0 ? '' : 'section-alt'}`}>
+        <div class="container">
+          <div class="category-header">
+            <span class="category-emoji">{cat.emoji}</span>
+            <h2 class="category-title">{cat.title}</h2>
+            <span class="category-count" data-category={cat.id}>0/{cat.items.length}</span>
+          </div>
+          <div class="checklist-items">
+            {cat.items.map(item => (
+              <label class="checklist-row" data-item-id={item.id}>
+                <input type="checkbox" class="checklist-checkbox" data-id={item.id} />
+                <span class="checkbox-visual"></span>
+                <span class="checklist-content">
+                  <span class="checklist-label">
+                    {item.label}
+                    {item.url && (
+                      <a href={item.url} target="_blank" rel="noopener" class="checklist-link" title="Open link" onclick="event.stopPropagation();">↗</a>
+                    )}
+                    {item.dueBy && <span class="checklist-due">{item.dueBy}</span>}
+                  </span>
+                  {item.note && <span class="checklist-note">{item.note}</span>}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </section>
+    ))}
+  </main>
+</TripLayout>
+
+<script is:inline define:vars={{ storageKey }}>
+  (function() {
+    function loadState() {
+      try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { return {}; }
+    }
+    function saveState(state) { localStorage.setItem(storageKey, JSON.stringify(state)); }
+    function updateProgress() {
+      const checkboxes = document.querySelectorAll('.checklist-checkbox');
+      const total = checkboxes.length;
+      let checked = 0;
+      checkboxes.forEach(cb => { if (cb.checked) checked++; });
+      const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+      const fill = document.getElementById('progress-fill');
+      const text = document.getElementById('progress-text');
+      if (fill) fill.style.width = pct + '%';
+      if (text) text.textContent = checked + ' of ' + total + ' complete (' + pct + '%)';
+      const cats = {};
+      checkboxes.forEach(cb => {
+        const row = cb.closest('.section');
+        if (!row) return;
+        const countEl = row.querySelector('.category-count');
+        if (!countEl) return;
+        const catId = countEl.getAttribute('data-category');
+        if (!cats[catId]) cats[catId] = { total: 0, checked: 0, el: countEl };
+        cats[catId].total++;
+        if (cb.checked) cats[catId].checked++;
+      });
+      Object.values(cats).forEach(c => {
+        c.el.textContent = c.checked + '/' + c.total;
+        c.el.classList.toggle('category-complete', c.checked === c.total && c.total > 0);
+      });
+    }
+    function init() {
+      const state = loadState();
+      document.querySelectorAll('.checklist-checkbox').forEach(cb => {
+        const id = cb.getAttribute('data-id');
+        if (state[id]) { cb.checked = true; cb.closest('.checklist-row')?.classList.add('checked'); }
+        cb.addEventListener('change', () => {
+          const s = loadState();
+          const row = cb.closest('.checklist-row');
+          if (cb.checked) { s[id] = true; row?.classList.add('checked'); }
+          else { delete s[id]; row?.classList.remove('checked'); }
+          saveState(s);
+          updateProgress();
+        });
+      });
+      updateProgress();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  })();
+</script>
+
+<style>
+  .checklist-hero { padding: 3rem 2rem 2rem; text-align: center; border-bottom: 1px solid var(--cream-dark); }
+  .checklist-hero-inner { max-width: 600px; margin: 0 auto; }
+  .checklist-eyebrow { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; }
+  .checklist-title { font-family: var(--font-display); font-size: clamp(2.3rem, 7vw, 4rem); font-weight: 300; margin-bottom: 1rem; letter-spacing: -0.02em; }
+  .checklist-subtitle { font-size: 1rem; color: var(--ink-muted); margin-bottom: 1.5rem; line-height: 1.6; }
+
+  .progress-container { max-width: 400px; margin: 0 auto; }
+  .progress-bar { height: 8px; background: var(--cream-dark); border-radius: 4px; overflow: hidden; margin-bottom: 0.6rem; }
+  .progress-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.8rem; color: var(--ink-faint); letter-spacing: 0.03em; }
+
+  .section { padding: 2.5rem 2rem; }
+  .section-alt { background: white; }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  .category-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--cream-dark); }
+  .category-emoji { font-size: 1.3rem; }
+  .category-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 500; color: var(--ink); flex: 1; }
+  .category-count { font-size: 0.78rem; font-weight: 500; color: var(--ink-faint); background: var(--cream-dark); padding: 0.2rem 0.65rem; border-radius: 20px; }
+  .category-count.category-complete { background: var(--green-light); color: var(--pt-green); }
+
+  .checklist-items { display: flex; flex-direction: column; }
+  .checklist-row { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.7rem 0.5rem; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid var(--cream-dark); }
+  .checklist-row:last-child { border-bottom: none; }
+  .checklist-row:hover { background: rgba(0,0,0,0.02); }
+  .checklist-row.checked .checklist-label { text-decoration: line-through; color: var(--ink-faint); }
+  .checklist-row.checked .checklist-note { color: var(--ink-faint); opacity: 0.6; }
+
+  .checklist-checkbox { position: absolute; opacity: 0; width: 0; height: 0; }
+  .checkbox-visual {
+    width: 20px; height: 20px; min-width: 20px;
+    border: 2px solid var(--cream-dark); border-radius: 4px; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, border-color 0.2s; position: relative;
+  }
+  .checkbox-visual::after {
+    content: ''; width: 5px; height: 9px;
+    border: solid white; border-width: 0 2px 2px 0;
+    transform: rotate(45deg) scale(0); transition: transform 0.15s ease;
+    position: absolute; top: 2px;
+  }
+  .checklist-checkbox:checked + .checkbox-visual { background: var(--accent); border-color: var(--accent); }
+  .checklist-checkbox:checked + .checkbox-visual::after { transform: rotate(45deg) scale(1); }
+  .checklist-checkbox:focus-visible + .checkbox-visual { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .checklist-content { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0; }
+  .checklist-label { font-size: 0.9rem; color: var(--ink); line-height: 1.5; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .checklist-note { font-size: 0.8rem; color: var(--ink-faint); line-height: 1.5; }
+  .checklist-due { font-size: 0.68rem; font-weight: 500; color: var(--gold); background: var(--gold-light); padding: 0.1rem 0.5rem; border-radius: 20px; white-space: nowrap; }
+  .checklist-link { font-size: 0.75rem; color: var(--ink-faint); border: 1px solid var(--cream-dark); padding: 0 0.3rem; border-radius: 3px; }
+  .checklist-link:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  @media (max-width: 600px) {
+    .checklist-hero { padding: 2.5rem 1.5rem 1.5rem; }
+    .section { padding: 1.5rem 1.25rem; }
+  }
+
+  .top-nav ~ .top-nav { display: none; }
+</style>
+
+<style is:global>
+  [data-accent] {}
+</style>
+
+<style>
+  header.checklist-hero { --accent: var(--accent, var(--pt-green)); }
+</style>

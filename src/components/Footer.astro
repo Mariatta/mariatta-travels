@@ -1,0 +1,81 @@
+---
+interface Props {
+  footerText: string;
+  repoUrl: string;
+}
+const { footerText, repoUrl } = Astro.props;
+
+const socials = [
+  { href: 'https://mariatta.ca', label: 'Website', icon: 'fa-solid fa-globe', rel: 'noopener' },
+  { href: 'https://fosstodon.org/@mariatta', label: 'Mastodon', icon: 'fa-brands fa-mastodon', rel: 'me noopener' },
+  { href: 'https://bsky.app/profile/mariatta.ca', label: 'Bluesky', icon: 'fa-brands fa-bluesky', rel: 'noopener' },
+  { href: 'https://www.linkedin.com/in/mariatta', label: 'LinkedIn', icon: 'fa-brands fa-linkedin-in', rel: 'noopener' },
+  { href: 'https://www.instagram.com/mariatta81', label: 'Instagram', icon: 'fa-brands fa-instagram', rel: 'noopener' },
+];
+---
+<footer>
+  <div class="container footer-inner">
+    <p class="footer-text">{footerText}</p>
+    <p class="footer-tagline">Part of the <strong>No Spreadsheet</strong> movement — by Mariatta</p>
+    <p class="footer-sub">Built with Astro · Hosted on <a href={repoUrl} target="_blank" rel="noopener">GitHub Pages</a></p>
+    <ul class="footer-socials" aria-label="Mariatta's online presence">
+      {socials.map(s => (
+        <li>
+          <a href={s.href} target="_blank" rel={s.rel} aria-label={s.label}>
+            <i class={s.icon} aria-hidden="true"></i>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</footer>
+
+<style>
+  footer { border-top: 1px solid var(--cream-dark); padding: 2rem; }
+  .footer-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    text-align: center;
+  }
+  .footer-text { font-family: var(--font-display); font-size: 1rem; color: var(--ink-muted); }
+  .footer-tagline { font-size: 0.8rem; color: var(--ink-faint); font-style: italic; }
+  .footer-tagline strong { font-style: normal; font-weight: 600; color: var(--ink-muted); }
+  .footer-sub { font-size: 0.75rem; color: var(--ink-faint); }
+  .footer-sub a {
+    color: var(--pt-green);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 500;
+  }
+  .footer-sub a:hover { text-decoration-thickness: 2px; }
+
+  .footer-socials {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem;
+    margin: 0.85rem 0 0;
+    padding: 0;
+  }
+  .footer-socials li { display: inline-flex; }
+  .footer-socials a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--ink-muted);
+    background: transparent;
+    transition: color 0.15s, background 0.15s, transform 0.15s;
+    font-size: 1rem;
+  }
+  .footer-socials a:hover {
+    color: white;
+    background: var(--pt-green);
+    transform: translateY(-1px);
+  }
+</style>

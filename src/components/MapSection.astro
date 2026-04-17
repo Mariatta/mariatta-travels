@@ -1,0 +1,137 @@
+---
+import type { MapPoint } from '../data/types';
+
+interface Props {
+  mapCenter: { lat: number; lng: number };
+  mapZoom?: number;
+  mapPoints: MapPoint[];
+  accentColor: string;
+}
+
+const { mapCenter, mapZoom = 13, mapPoints, accentColor } = Astro.props;
+const mapId = `map-${Math.random().toString(36).slice(2, 8)}`;
+const hasIceCream = mapPoints.some(p => p.type === 'ice-cream');
+---
+
+<div class="map-container">
+  <div id={mapId} class="map"></div>
+  <div class="map-legend">
+    <span class="legend-item"><span class="legend-dot legend-attraction"></span> Attractions</span>
+    <span class="legend-item"><span class="legend-dot legend-hotel"></span> Hotels</span>
+    <span class="legend-item"><span class="legend-dot legend-restaurant"></span> Restaurants</span>
+    {hasIceCream && <span class="legend-item"><span class="legend-dot legend-ice-cream"></span> Ice cream 🍦</span>}
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script is:inline
+  data-map-id={mapId}
+  data-center={JSON.stringify(mapCenter)}
+  data-zoom={mapZoom}
+  data-points={JSON.stringify(mapPoints)}
+  data-accent={accentColor}
+>
+  (function() {
+    const script = document.currentScript;
+    const mapId = script.getAttribute('data-map-id');
+    const center = JSON.parse(script.getAttribute('data-center'));
+    const zoom = Number(script.getAttribute('data-zoom'));
+    const points = JSON.parse(script.getAttribute('data-points'));
+    const accent = script.getAttribute('data-accent');
+
+    function init() {
+      const el = document.getElementById(mapId);
+      if (!el || el._leaflet_id) return;
+
+      const map = L.map(mapId, { scrollWheelZoom: false }).setView([center.lat, center.lng], zoom);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 18,
+      }).addTo(map);
+
+      const colors = {
+        attraction: accent,
+        hotel: '#2563EB',
+        restaurant: '#D97706',
+        'ice-cream': '#EC4899',
+      };
+
+      const icons = {
+        attraction: '\u2605',
+        hotel: '\u2302',
+        restaurant: '\u2726',
+        'ice-cream': '\ud83c\udf66',
+      };
+
+      points.forEach(function(pt) {
+        const color = colors[pt.type] || accent;
+        const icon = icons[pt.type] || '\u2022';
+        const marker = L.marker([pt.lat, pt.lng], {
+          icon: L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background:' + color + ';width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">' + icon + '</div>',
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+            popupAnchor: [0, -16],
+          }),
+        }).addTo(map);
+
+        const label = pt.type.charAt(0).toUpperCase() + pt.type.slice(1);
+        marker.bindPopup('<strong>' + pt.name + '</strong><br><span style="font-size:0.85em;color:#666;">' + label + '</span>');
+      });
+    }
+
+    if (typeof L !== 'undefined') {
+      init();
+    } else {
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(init, 100);
+      });
+    }
+  })();
+</script>
+
+<style>
+  .map-container {
+    margin-top: 2rem;
+    border: 1px solid var(--cream-dark);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .map {
+    height: 450px;
+    width: 100%;
+    z-index: 1;
+  }
+  .map-legend {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.75rem 1.25rem;
+    background: white;
+    border-top: 1px solid var(--cream-dark);
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-attraction { background: var(--ink); }
+  .legend-hotel { background: #2563EB; }
+  .legend-restaurant { background: #D97706; }
+  .legend-ice-cream { background: #EC4899; }
+
+  @media (max-width: 600px) {
+    .map { height: 320px; }
+  }
+</style>

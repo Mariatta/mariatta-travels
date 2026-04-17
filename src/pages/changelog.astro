@@ -1,0 +1,359 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+<Layout title="Changelog" description="Prompt version history for Mariatta Travels — how the site was built with AI">
+  <Nav />
+
+  <header class="page-hero">
+    <div class="page-hero-inner">
+      <p class="page-eyebrow">Behind the Scenes</p>
+      <h1 class="page-title">Prompt version history</h1>
+      <p class="page-subtitle">
+        A summary of the prompts used to build this site, starting from the original Portugal trip planner
+        that became the foundation for this monorepo — a sense of how generative AI can be used for travel
+        planning through iterative conversation.
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <div class="changelog">
+          <div class="changelog-entry">
+            <div class="changelog-header">
+              <h2 class="changelog-version">v2.0</h2>
+              <span class="changelog-date">April 2026</span>
+              <span class="changelog-tag tag-major">Major release</span>
+            </div>
+
+            <ol class="prompt-list">
+              <li>
+                <span class="prompt-label">From one trip to a monorepo</span>
+                <p>A conversation about hosting options for multiple trips compared three approaches: a subdomain per trip, a single hub with path-based routing, or a monorepo. Claude recommended the monorepo to share layout and components across trips, and a new repo <code>mariatta-travels</code> was created deployed to <code>travel.mariatta.ca</code>. The original Portugal trip repo was left intact at <code>mariatta.ca/portugal-trip</code> as an early-experiment artifact.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Pluggable sections for different trip types</span>
+                <p>Discussion about family trips vs conference trips led to a <code>TripConfig</code> shape with a <code>type</code> field (<code>family</code> or <code>conference</code>) and a <code>sections</code> array declaring which pages exist (budget, checklist, log, sync). Family trips render a multi-city grid on the home; conference trips render the single city directly with a venue block. Adding a new trip type is adding a section component, not editing templates.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Import four trips: Portugal, Taiwan, LFNW 2026, Core Dev Sprint</span>
+                <p>Existing repos for the Portugal family trip, Taiwan family trip, USA Bellingham (renamed to LFNW 2026), and the Python Core Dev Sprint 2026 at OpenAI were all imported into the monorepo under <code>src/trips/&lt;slug&gt;/</code>. A unified <code>types.ts</code> replaced the four separate schemas — generic currency and price strings, optional <code>Venue</code> for conference trips, optional <code>iceCreamSpots</code> for conference-tradition spots, and a chronological trip registry for prev/next.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Trip statuses: planning, confirmed, completed, not taken</span>
+                <p>Not every planned trip happens. A <code>status</code> field was added to each trip (<code>planning</code>, <code>confirmed</code>, <code>cancelled</code>) with <code>completed</code> auto-derived once the end date has passed. The hub page now has three sections — Upcoming, Archive, and Shelved — and each trip card shows a colour-coded status badge. Cancelled trips render muted with a strikethrough title.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Trip hub landing page</span>
+                <p>A new hub page at <code>travel.mariatta.ca/</code> lists all trips as cards with emoji, type (Family trip / Conference), dates, tagline, and status. Trips are ordered chronologically by start date.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Two-tier navigation</span>
+                <p>Initial navigation layered the trip's own nav on top, replacing the site-level nav — feeling unnatural once inside a trip. Two-tier nav solved it: the top row always reads <code>✈️ Mariatta Travels · All trips · About</code>; a second row appears inside each trip showing its sections. The breadcrumb was removed since the second row already carries the trip identity.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Prev/next navigation at every level</span>
+                <p>Two kinds of prev/next: between trips (in the footer, chronological order — e.g. LFNW → Portugal → Taiwan → Core Sprint) and between cities within a multi-city trip (Porto ← Lisbon ← Aveiro, ending in back-to-overview). The city-level nav appears only on city pages.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Event callout for mixed trips</span>
+                <p>For trips that mix family vacation and conference (like Portugal, which has PyCon Portugal embedded in Aveiro), a small <code>EventCallout</code> on the trip home flags the conference — <code>🎤 PyCon Portugal · Sep 3–4</code> — linking directly to the Aveiro page's full venue block. Full details live on the city page where the event happens; the callout makes them discoverable.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Venue block for conference cities</span>
+                <p>A reusable <code>VenueBlock</code> component renders event venue info in a 3-column grid with emoji-labelled details (📍 Address, 📅 Dates, 🕘 Hours, 🚇 Transit, 🪪 Access, ✉️ Contact). Populated for PyCon Portugal at Universidade de Aveiro, LinuxFest Northwest at Bellingham Technical College, and the Python Core Dev Sprint at OpenAI in San Francisco.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Ice cream selfie tradition (from a skill)</span>
+                <p>Claude checked the <code>new-trip</code> skill and found Mariatta's tradition of taking ice cream selfies at every conference. An <code>IceCreamSpot</code> type, pink <code>ice-cream</code> map pin category, and <code>IceCreamSpots</code> section were added. Each conference city now has 3–4 scouted spots with addresses, signature flavours, and photo-worthy notes — plus a "Scout ice cream selfie spot near venue" checklist item.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Budget with charts and multi-currency</span>
+                <p>The budget page was rebuilt per trip with a CAD ↔ base currency toggle, editable exchange rate, and three Chart.js charts — estimated vs actual by category, spending by category, and spending by city (multi-city trips only). Each trip uses its own <code>localStorage</code> key so budgets don't bleed across trips.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Import / Export with download and upload buttons</span>
+                <p>The sync page now has proper buttons — "Export Data" downloads a <code>{'{trip-id}-data-YYYY-MM-DD.json'}</code> file, "Copy to Clipboard" copies it, "Choose File" reads a JSON file back in, and the textarea accepts pasted JSON. Merge and Replace buttons give control over how incoming data combines with existing.</p>
+              </li>
+              <li>
+                <span class="prompt-label">AI-native dev workflow for the monorepo</span>
+                <p>The <code>/new-trip</code> slash command was updated for the monorepo and moved into the repo itself at <code>.claude/commands/new-trip.md</code>, with an <code>install.sh</code> that symlinks it globally. A <code>CLAUDE.md</code> at the root documents the architecture for in-repo work. Both ship with the code and stay in sync with it.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Dedicated changelog page</span>
+                <p>This list of prompts outgrew its place on the About page. It was moved to its own page at <code>/changelog/</code>, with a small green-bordered callout on About linking here. The callout lives directly below the "100% generated by Claude" section, so the handoff reads as "…and here's the log of every prompt."</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-header">
+              <h2 class="changelog-version">v1.1</h2>
+              <span class="changelog-date">April 2026</span>
+              <span class="changelog-tag tag-new">New features</span>
+            </div>
+
+            <ol class="prompt-list">
+              <li>
+                <span class="prompt-label">Track the travel budget</span>
+                <p>A prompt asked to track travel budget and finances. Claude suggested several approaches
+                including a budget page on the site, a spreadsheet, or a budgeting app. After the spreadsheet
+                option was rejected, Claude built a full budget page with pre-filled estimates across 10
+                categories — flights, accommodation, food, transport, activities, shopping, and more.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Log expenses during the trip</span>
+                <p>The budget page was expanded with an expense log form to record individual purchases —
+                with description, amount, category, budget item, city, and date. Through several rounds of
+                prompting, Claude made the logged expenses update the category actuals in the table above,
+                added the ability to edit and delete entries, and made unassigned expenses appear as dynamic
+                rows in their category section.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Visualize spending with charts</span>
+                <p>Claude researched popular charting libraries and recommended Chart.js for its lightweight
+                CDN-friendly approach. Three interactive charts were added: estimated vs actual by category
+                (horizontal bar), spending by category (doughnut), and spending by city (doughnut). All charts
+                update in real time as expenses are added or removed.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Sync data between devices</span>
+                <p>Since the budget data lives in localStorage (local to each browser), a prompt asked about
+                syncing between phone and computer. Claude discussed several options and built an import/export
+                feature — download expense data as a JSON file or copy to clipboard, then import on another
+                device by uploading the file or pasting the JSON. Supports merging with existing data or
+                replacing all data.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Make it installable as a mobile app</span>
+                <p>A discussion about creating a mobile app led to Claude recommending a Progressive Web App
+                (PWA) as the simplest approach. Claude added a manifest, service worker, and app icons so
+                family members can visit the site on their phone and add it to their home screen — it opens
+                full-screen like a native app and works offline. A notification banner appears when site
+                updates are available.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Quick expense logging page</span>
+                <p>A discussion about how the budget page would be used differently during planning vs travel
+                led to creating a separate lightweight <code>/log/</code> page optimized for quick on-the-go
+                expense entry on a phone. A floating "+" button was also added to the budget page for quick
+                access. The import/export was moved to its own <code>/sync/</code> page to keep things focused.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Multi-currency support (CAD/EUR)</span>
+                <p>As a Canadian traveling to Portugal, pre-trip expenses are in CAD while on-the-ground
+                spending is in EUR. Claude added a currency toggle and editable exchange rate to the budget
+                page, a currency selector on every expense entry, and per-item native currency on all budget
+                items. All totals, charts, and category breakdowns convert automatically to whichever display
+                currency is selected.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Custom favicon with personal branding</span>
+                <p>Claude looked up the favicon from mariatta.ca on GitHub, then designed a new one combining
+                the "M" monogram with a Portuguese flag diagonal split — green and red — to represent
+                both Mariatta's personal brand and the Portugal trip.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-header">
+              <h2 class="changelog-version">v1.0</h2>
+              <span class="changelog-date">April 2026</span>
+              <span class="changelog-tag tag-initial">Initial release</span>
+            </div>
+
+            <ol class="prompt-list">
+              <li>
+                <span class="prompt-label">Shift the dates</span>
+                <p>The initial itinerary had arrival in Porto on August 21. The first prompt changed the arrival
+                to August 22, and Claude shifted every date across all three cities — Porto, Lisbon, and Aveiro —
+                including individual day dates, transport dates, and the overview page.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Add an anniversary restaurant</span>
+                <p>September 3 is our 20th wedding anniversary. Claude searched for fine dining restaurants in Aveiro
+                suitable for the occasion, recommended Salpoente (Michelin-recognised, in a converted salt warehouse),
+                and added it to both the itinerary and the restaurant list.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Add PyCon Portugal</span>
+                <p>PyCon Portugal takes place September 3–4 in Aveiro. Claude added two conference days to the itinerary,
+                updated the return-to-Porto schedule, added a departure day (Sep 5), and adjusted the total trip
+                length from 13 to 14 nights across all pages.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Add maps and links to all places</span>
+                <p>Claude added website URLs and Google Maps links to every activity across all three cities. This
+                involved updating the Activity type to support optional <code>url</code> and <code>mapUrl</code> fields,
+                updating the DayCard component to render clickable link buttons, and adding links to approximately
+                40+ activities.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Add overview maps</span>
+                <p>Each city page got an interactive map (using Leaflet and OpenStreetMap) showing all attractions,
+                hotels, and restaurants as color-coded pins. Claude created a reusable MapSection component, added
+                a MapPoint type, and populated coordinates for every point of interest across all three cities.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Expand the travel tips</span>
+                <p>The original overview page had 6 brief tips. Claude expanded this into 4 categorized sections
+                (Money & Payments, Weather & Packing, Getting Around, Practical Tips) with 19 detailed tips covering
+                currency, tipping culture, what to pack, inter-city trains, public transit cards, rideshare apps,
+                power adapters, language, and health/safety.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Adjust the return schedule</span>
+                <p>The original plan had an evening return to Porto on Sep 4. A prompt changed this to a morning
+                return on Sep 5, which meant updating the transport info, restructuring the last two days of the
+                itinerary, and removing the need for an overnight in Porto.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Add ice cream selfie spots</span>
+                <p>A personal tradition: taking ice cream selfies at tech conferences. Claude researched gelato shops
+                in Aveiro and added suggestions to both PyCon days — Gelados de Portugal (with Portuguese-inspired
+                flavours like ovos moles) and Gelataria Italiana.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Build a planning checklist</span>
+                <p>Rather than building a separate Python backend (which was discussed and rejected as over-engineering),
+                Claude built a checklist page within the existing Astro site. It has 8 categories and 48 items covering
+                flights, accommodation, documents, PyCon registration, activity bookings, packing, and pre-departure
+                tasks. Progress is tracked with checkboxes persisted in localStorage, with a progress bar and
+                per-category completion counts.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Portuguese color theme</span>
+                <p>The color palette was updated to reflect the Portuguese flag — green, red, and yellow accents
+                throughout the site, from the navigation active states to rating stars, section labels, progress bars,
+                and the hero gradient.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Add an About page</span>
+                <p>This page — explaining what the site is, how it was made, and the prompts used to build it.</p>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <p class="back-link">
+          <a href={`${import.meta.env.BASE_URL}about/`}>← Back to About</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <Footer footerText="✈️ Mariatta Travels" repoUrl="https://github.com/Mariatta/mariatta-travels" />
+</Layout>
+
+<style>
+  .page-hero { padding: 4rem 2rem 3rem; text-align: center; border-bottom: 1px solid var(--cream-dark); }
+  .page-hero-inner { max-width: 700px; margin: 0 auto; }
+  .page-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--pt-green);
+    margin-bottom: 0.75rem;
+  }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 7vw, 4rem);
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+  .page-subtitle { font-size: 1rem; color: var(--ink-muted); line-height: 1.7; }
+
+  .section { padding: 4rem 2rem; }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  .changelog-entry { margin-bottom: 3rem; counter-reset: prompt; }
+  .changelog-entry:last-of-type { margin-bottom: 1.5rem; }
+  .changelog-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--cream-dark);
+    flex-wrap: wrap;
+  }
+  .changelog-version {
+    font-family: var(--font-body);
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+  .changelog-date { font-size: 0.8rem; color: var(--ink-faint); }
+  .changelog-tag {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: 20px;
+  }
+  .tag-new { color: var(--pt-green); background: var(--green-light); }
+  .tag-initial { color: var(--blue); background: var(--blue-light); }
+  .tag-major { color: var(--terra); background: var(--terra-light); }
+
+  .prompt-list { list-style: none; padding: 0; margin-top: 1.5rem; counter-reset: prompt; }
+  .prompt-list > li {
+    position: relative;
+    padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+    margin-bottom: 0.75rem;
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: var(--radius-lg);
+    counter-increment: prompt;
+  }
+  .prompt-list > li::before {
+    content: counter(prompt);
+    position: absolute;
+    left: 1.25rem;
+    top: 1.25rem;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--pt-green);
+    width: 1.5rem;
+  }
+  .prompt-label {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 0.4rem;
+  }
+  .prompt-list p {
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+    line-height: 1.65;
+    margin-bottom: 0;
+  }
+  .prompt-list code {
+    font-size: 0.85em;
+    background: var(--cream-dark);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    color: var(--ink);
+  }
+
+  .back-link { margin-top: 2rem; font-size: 0.9rem; }
+  .back-link a { color: var(--pt-green); text-decoration: underline; text-underline-offset: 2px; }
+  .back-link a:hover { color: var(--ink); }
+
+  @media (max-width: 600px) {
+    .page-hero { padding: 3rem 1.5rem 2rem; }
+    .section { padding: 2.5rem 1.25rem; }
+    .prompt-list > li { padding-left: 3rem; }
+  }
+</style>

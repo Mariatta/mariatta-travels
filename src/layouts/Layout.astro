@@ -1,0 +1,176 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  siteName?: string;
+  themeColor?: string;
+}
+const {
+  title,
+  description = 'Trip planning & journals by Mariatta',
+  siteName = 'Mariatta Travels',
+  themeColor = '#1B3A6B',
+} = Astro.props;
+const base = import.meta.env.BASE_URL;
+const siteUrl = 'https://travel.mariatta.ca';
+const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
+const ogImage = `${siteUrl}/og-image.png`;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <title>{fullTitle}</title>
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={siteUrl} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name" content={siteName} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={fullTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+  <link rel="icon" type="image/png" href={`${base}favicon.png`} />
+  <link rel="manifest" href={`${base}manifest.json`} />
+  <meta name="theme-color" content={themeColor} />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content={siteName} />
+  <link rel="apple-touch-icon" href={`${base}favicon.png`} />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+  <slot />
+</body>
+</html>
+
+<style is:global>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF7F2;
+    --cream-dark: #EDE8DF;
+    --ink: #1C1917;
+    --ink-muted: #5C5550;
+    --ink-faint: #9E9890;
+    --blue: #1B3A6B;
+    --blue-light: #E8EFF9;
+    --gold: #C9981A;
+    --gold-light: #FDF4D8;
+    --terra: #C62D2D;
+    --terra-light: #FBEAEA;
+    --green: #006B3F;
+    --green-light: #E2F3EB;
+    --pt-red: #C62D2D;
+    --pt-green: #006B3F;
+    --pt-yellow: #D4A629;
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-body: 'Jost', system-ui, sans-serif;
+    --radius: 4px;
+    --radius-lg: 8px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.7;
+    font-size: 16px;
+    font-weight: 300;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; }
+
+  .tile-pattern {
+    background-image:
+      repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,107,63,0.04) 10px, rgba(0,107,63,0.04) 11px),
+      repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(198,45,45,0.03) 10px, rgba(198,45,45,0.03) 11px);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.7s ease forwards; }
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.4s; }
+
+  nav.top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(248, 244, 238, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--cream-dark);
+    padding: 0 2rem;
+  }
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    gap: 2rem;
+  }
+  .nav-brand {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .nav-links {
+    display: flex;
+    gap: 0.25rem;
+    list-style: none;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .nav-links a {
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius);
+    color: var(--ink-muted);
+    transition: color 0.2s, background 0.2s;
+  }
+  .nav-links a:hover {
+    color: var(--ink);
+    background: var(--cream-dark);
+  }
+  .nav-links a.active {
+    color: var(--pt-green);
+    background: var(--green-light);
+  }
+
+  @media (max-width: 600px) {
+    nav.top-nav { padding: 0 1rem; }
+    .nav-brand { font-size: 1rem; }
+    .nav-links a { padding: 0.3rem 0.5rem; font-size: 0.72rem; }
+  }
+</style>

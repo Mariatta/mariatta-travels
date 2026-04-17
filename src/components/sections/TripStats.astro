@@ -1,0 +1,44 @@
+---
+import type { TripStat } from '../../data/types';
+
+interface Props {
+  stats: TripStat[];
+}
+const { stats } = Astro.props;
+---
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      {stats.map(s => (
+        <div class="stat">
+          <span class="stat-num">{s.num}</span>
+          <span class="stat-label">{s.label}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .stats-section { padding: 2rem 2rem 0; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .stats-grid {
+    display: flex;
+    gap: 2.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 1.5rem;
+    border: 1px solid var(--cream-dark);
+    border-radius: var(--radius-lg);
+    background: white;
+  }
+  .stat { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+  .stat-num { font-family: var(--font-display); font-size: 2rem; font-weight: 400; color: var(--ink); line-height: 1; }
+  .stat-label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+
+  @media (max-width: 600px) {
+    .stats-section { padding: 1.5rem 1.25rem 0; }
+    .stats-grid { gap: 1.5rem; padding: 1rem; }
+    .stat-num { font-size: 1.6rem; }
+  }
+</style>

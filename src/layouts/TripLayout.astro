@@ -1,0 +1,47 @@
+---
+import Layout from './Layout.astro';
+import Nav from '../components/Nav.astro';
+import TripSections from '../components/TripSections.astro';
+import TripNav from '../components/TripNav.astro';
+import CityNav from '../components/CityNav.astro';
+import Footer from '../components/Footer.astro';
+import type { TripConfig, SectionId, CityData } from '../data/types';
+import { getTripNeighbours } from '../data/trips';
+
+interface Props {
+  trip: TripConfig;
+  section?: SectionId | 'home';
+  pageTitle: string;
+  pageLabel?: string;
+  currentCity?: CityData;
+}
+
+const { trip, section = 'home', pageTitle, currentCity } = Astro.props;
+const { prev, next } = getTripNeighbours(trip.id);
+
+let cityPrev: CityData | null = null;
+let cityNext: CityData | null = null;
+if (currentCity) {
+  const i = trip.cities.findIndex(c => c.slug === currentCity.slug);
+  if (i > 0) cityPrev = trip.cities[i - 1];
+  if (i >= 0 && i < trip.cities.length - 1) cityNext = trip.cities[i + 1];
+}
+---
+<Layout title={pageTitle} description={trip.description} siteName={trip.title} themeColor={trip.accentColor}>
+  <div class="trip-scope" style={`--accent: ${trip.accentColor}`}>
+    <Nav />
+    <TripSections trip={trip} current={section} />
+    <slot />
+    {currentCity
+      ? <CityNav tripId={trip.id} prev={cityPrev} next={cityNext} />
+      : <TripNav prev={prev} next={next} />}
+    <Footer
+      footerText={`${trip.emoji} ${trip.title}`}
+      repoUrl="https://github.com/Mariatta/mariatta-travels"
+    />
+  </div>
+</Layout>
+
+<style is:global>
+  .trip-scope { display: contents; }
+</style>

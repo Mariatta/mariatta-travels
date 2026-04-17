@@ -1,0 +1,62 @@
+---
+import type { IceCreamSpot } from '../../data/types';
+
+interface Props {
+  spots: IceCreamSpot[];
+  accentColor: string;
+}
+const { spots, accentColor } = Astro.props;
+---
+<section class="section" style={`--accent: ${accentColor}`}>
+  <div class="container">
+    <div class="section-label">Conference Tradition</div>
+    <h2 class="section-title">🍦 Ice Cream Selfie Spots</h2>
+    <p class="section-intro">
+      A Mariatta tradition — at every conference, snap a photo with an ice cream. Here are the sweet spots scouted for this trip.
+    </p>
+    <div class="ic-grid">
+      {spots.map(s => (
+        <div class="ic-card">
+          <div class="ic-card-header">
+            <h3 class="ic-name">{s.name}</h3>
+            {s.website && <a class="ic-link" href={s.website} target="_blank" rel="noopener">Website ↗</a>}
+          </div>
+          <p class="ic-address">
+            {s.address}
+            {s.mapUrl && (<> · <a href={s.mapUrl} target="_blank" rel="noopener">Maps ↗</a></>)}
+          </p>
+          <p class="ic-flavors"><span class="ic-meta-label">Try</span> {s.signatureFlavors}</p>
+          <p class="ic-photo"><span class="ic-meta-label">Photo</span> {s.photoWorthy}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .section { padding: 4rem 2rem; background: linear-gradient(180deg, rgba(236,72,153,0.04), transparent); }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #EC4899; margin-bottom: 0.75rem; }
+  .section-title { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 400; margin-bottom: 0.75rem; }
+  .section-intro { font-size: 1rem; color: var(--ink-muted); max-width: 600px; margin-bottom: 2.5rem; line-height: 1.7; }
+
+  .ic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1rem; }
+  .ic-card {
+    padding: 1.25rem 1.25rem;
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-left: 4px solid #EC4899;
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .ic-card-header { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+  .ic-name { font-family: var(--font-display); font-size: 1.2rem; font-weight: 500; color: var(--ink); line-height: 1.2; }
+  .ic-link { font-size: 0.8rem; color: #EC4899; text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
+  .ic-address, .ic-flavors, .ic-photo { font-size: 0.85rem; color: var(--ink-muted); line-height: 1.5; }
+  .ic-address a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  .ic-meta-label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-right: 0.4rem; }
+
+  @media (max-width: 600px) { .section { padding: 2.5rem 1.25rem; } }
+</style>

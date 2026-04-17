@@ -1,0 +1,73 @@
+---
+import type { TripConfig } from '../data/types';
+
+interface Props {
+  prev: TripConfig | null;
+  next: TripConfig | null;
+}
+const { prev, next } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+{(prev || next) && (
+  <nav class="trip-nav" aria-label="Other trips">
+    <div class="trip-nav-inner">
+      {prev ? (
+        <a class="trip-nav-link prev" href={`${base}${prev.id}/`}>
+          <span class="arrow" aria-hidden="true">←</span>
+          <span class="meta">
+            <span class="label">Previous trip</span>
+            <span class="title">{prev.emoji}&nbsp;{prev.shortTitle}</span>
+          </span>
+        </a>
+      ) : <span class="spacer" />}
+      {next ? (
+        <a class="trip-nav-link next" href={`${base}${next.id}/`}>
+          <span class="meta">
+            <span class="label">Next trip</span>
+            <span class="title">{next.emoji}&nbsp;{next.shortTitle}</span>
+          </span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      ) : <span class="spacer" />}
+    </div>
+  </nav>
+)}
+
+<style>
+  .trip-nav {
+    border-top: 1px solid var(--cream-dark);
+    padding: 1.5rem 2rem 0;
+    max-width: 1100px;
+    margin: 2rem auto 0;
+  }
+  .trip-nav-inner {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: stretch;
+  }
+  .trip-nav-link {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.85rem 1.1rem;
+    border: 1px solid var(--cream-dark);
+    border-radius: var(--radius-lg);
+    background: white;
+    transition: border-color 0.15s, transform 0.15s;
+    flex: 1 1 40%;
+    max-width: 340px;
+  }
+  .trip-nav-link.next { justify-content: flex-end; text-align: right; margin-left: auto; }
+  .trip-nav-link:hover { border-color: var(--pt-green); transform: translateY(-1px); }
+  .meta { display: flex; flex-direction: column; gap: 0.1rem; }
+  .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-faint); }
+  .title { font-family: var(--font-display); font-size: 1.1rem; color: var(--ink); }
+  .arrow { font-size: 1.2rem; color: var(--ink-muted); }
+  .spacer { flex: 1 1 40%; max-width: 340px; }
+
+  @media (max-width: 600px) {
+    .trip-nav { padding: 1rem 1rem 0; }
+    .title { font-size: 1rem; }
+  }
+</style>

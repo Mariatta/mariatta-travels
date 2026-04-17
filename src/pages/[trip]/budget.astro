@@ -1,0 +1,594 @@
+---
+import TripLayout from '../../layouts/TripLayout.astro';
+import { trips } from '../../data/trips';
+
+export function getStaticPaths() {
+  return trips
+    .filter(t => t.sections.includes('budget'))
+    .map(t => ({ params: { trip: t.id }, props: { trip: t } }));
+}
+
+const { trip } = Astro.props;
+const preTripCategories = trip.budget.filter(c => c.type === 'pre-trip');
+const duringTripCategories = trip.budget.filter(c => c.type === 'during-trip');
+const storageKey = `travels-budget-${trip.id}`;
+const rateKey = `travels-rate-${trip.id}`;
+const displayKey = `travels-display-${trip.id}`;
+const baseCurrency = trip.baseCurrency;
+const cityNames = trip.cities.map(c => c.name);
+
+const currencyRates: Record<string, number> = {
+  EUR: 1.53, USD: 1.37, TWD: 0.045, CAD: 1,
+};
+const defaultRate = currencyRates[baseCurrency] ?? 1;
+
+const currencySymbol = (c: string) =>
+  c === 'EUR' ? '€' : c === 'USD' ? '$' : c === 'TWD' ? 'NT$' : c === 'CAD' ? '$' : c + ' ';
+
+const baseSym = currencySymbol(baseCurrency);
+---
+<TripLayout trip={trip} section="budget" pageTitle={`${trip.shortTitle} · Budget`} pageLabel="Budget">
+  <header class="budget-hero" style={`--accent: ${trip.accentColor}`}>
+    <div class="budget-hero-inner">
+      <p class="budget-eyebrow">Financial Planning</p>
+      <h1 class="budget-title">Travel Budget</h1>
+      <p class="budget-subtitle">Plan your expenses and track actual spending during the trip.</p>
+
+      <div class="currency-controls">
+        <div class="currency-toggle">
+          <span class="currency-toggle-label">Display in</span>
+          <button type="button" class="currency-btn active" data-currency="CAD">CAD $</button>
+          <button type="button" class="currency-btn" data-currency={baseCurrency}>{baseCurrency} {baseSym.trim()}</button>
+        </div>
+        {baseCurrency !== 'CAD' && (
+          <div class="exchange-rate-group">
+            <label for="exchange-rate">1 {baseCurrency} =</label>
+            <input type="number" id="exchange-rate" value={defaultRate} min="0.001" step="0.001" />
+            <span>CAD</span>
+          </div>
+        )}
+      </div>
+
+      <div class="budget-summary">
+        <div class="summary-card">
+          <span class="summary-label">Estimated Total</span>
+          <span class="summary-value" id="total-estimated">—</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Actual Spent</span>
+          <span class="summary-value" id="total-actual">—</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Remaining</span>
+          <span class="summary-value" id="total-remaining">—</span>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar"><div class="progress-fill" id="budget-progress"></div></div>
+        <p class="progress-text" id="budget-progress-text">0% of budget spent</p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="budget-subnav">
+    <div class="subnav-inner">
+      {preTripCategories.length > 0 && <a href="#pre-trip" class="subnav-link">Pre-trip Estimates</a>}
+      {duringTripCategories.length > 0 && <a href="#during-trip" class="subnav-link">During-trip Estimates</a>}
+      <a href="#charts" class="subnav-link">Charts</a>
+    </div>
+  </nav>
+
+  <main>
+    {preTripCategories.length > 0 && (
+      <>
+        <div class="phase-header" id="pre-trip">
+          <div class="container"><h2 class="phase-title">Pre-trip Expenses</h2><p class="phase-subtitle">Fixed costs to book before departure</p></div>
+        </div>
+        {preTripCategories.map((cat, i) => (
+          <section class={`section ${i % 2 === 0 ? '' : 'section-alt'}`}>
+            <div class="container">
+              <div class="category-header">
+                <span class="category-emoji">{cat.emoji}</span>
+                <h3 class="category-title">{cat.title}</h3>
+                <span class="category-amounts">
+                  <span class="category-estimated" data-cat-id={cat.id}>Est: —</span>
+                  <span class="category-actual" data-cat-actual={cat.id}>Actual: —</span>
+                </span>
+              </div>
+              <div class="budget-items">
+                {cat.items.map(item => (
+                  <div class="budget-row" data-item-id={item.id} data-estimated={item.estimated} data-item-currency={item.currency} data-cat={cat.id}>
+                    <div class="budget-item-info">
+                      <span class="budget-label">{item.label}</span>
+                      {item.note && <span class="budget-note">{item.note}</span>}
+                    </div>
+                    <div class="budget-amounts">
+                      <div class="amount-group">
+                        <span class="amount-label">Estimated</span>
+                        <span class="amount-value item-estimated" data-item-est={item.id}>—</span>
+                      </div>
+                      <div class="amount-group">
+                        <span class="amount-label">Actual</span>
+                        <span class="amount-value item-actual" data-item-actual={item.id}>—</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div class="budget-expenses-dynamic" data-cat-expenses={cat.id}></div>
+              </div>
+            </div>
+          </section>
+        ))}
+      </>
+    )}
+
+    {duringTripCategories.length > 0 && (
+      <>
+        <div class="phase-header" id="during-trip">
+          <div class="container"><h2 class="phase-title">During-trip Expenses</h2><p class="phase-subtitle">Variable costs to track while traveling</p></div>
+        </div>
+        {duringTripCategories.map((cat, i) => (
+          <section class={`section ${i % 2 === 0 ? '' : 'section-alt'}`}>
+            <div class="container">
+              <div class="category-header">
+                <span class="category-emoji">{cat.emoji}</span>
+                <h3 class="category-title">{cat.title}</h3>
+                <span class="category-amounts">
+                  <span class="category-estimated" data-cat-id={cat.id}>Est: —</span>
+                  <span class="category-actual" data-cat-actual={cat.id}>Actual: —</span>
+                </span>
+              </div>
+              <div class="budget-items">
+                {cat.items.map(item => (
+                  <div class="budget-row" data-item-id={item.id} data-estimated={item.estimated} data-item-currency={item.currency} data-cat={cat.id}>
+                    <div class="budget-item-info">
+                      <span class="budget-label">{item.label}</span>
+                      {item.note && <span class="budget-note">{item.note}</span>}
+                    </div>
+                    <div class="budget-amounts">
+                      <div class="amount-group">
+                        <span class="amount-label">Estimated</span>
+                        <span class="amount-value item-estimated" data-item-est={item.id}>—</span>
+                      </div>
+                      <div class="amount-group">
+                        <span class="amount-label">Actual</span>
+                        <span class="amount-value item-actual" data-item-actual={item.id}>—</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div class="budget-expenses-dynamic" data-cat-expenses={cat.id}></div>
+              </div>
+            </div>
+          </section>
+        ))}
+      </>
+    )}
+
+    <div class="phase-header" id="charts">
+      <div class="container"><h2 class="phase-title">Budget Charts</h2><p class="phase-subtitle">Visual breakdown of your trip finances</p></div>
+    </div>
+
+    <section class="section">
+      <div class="container">
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3 class="chart-title">Estimated vs Actual by Category</h3>
+            <div class="chart-wrapper chart-wrapper-bar"><canvas id="chart-est-vs-actual"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Spending by Category</h3>
+            <div class="chart-wrapper"><canvas id="chart-by-category"></canvas></div>
+          </div>
+          {cityNames.length > 1 && (
+            <div class="chart-card">
+              <h3 class="chart-title">Spending by City</h3>
+              <div class="chart-wrapper"><canvas id="chart-by-city"></canvas></div>
+            </div>
+          )}
+        </div>
+        <p class="footnote">
+          Log expenses on the <a href={`${import.meta.env.BASE_URL}${trip.id}/log/`}>Log page</a>.
+        </p>
+      </div>
+    </section>
+  </main>
+  <a href={`${import.meta.env.BASE_URL}${trip.id}/log/`} class="fab" title="Log an expense">+</a>
+</TripLayout>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script is:inline define:vars={{ storageKey, rateKey, displayKey, baseCurrency, defaultRate, cityNames, budgetMeta: trip.budget.map(c => ({ id: c.id, title: c.title, items: c.items.map(i => ({ id: i.id, currency: i.currency, estimated: i.estimated })) })) }}>
+(function() {
+  var displayCurrency = localStorage.getItem(displayKey) || 'CAD';
+  var exchangeRate = parseFloat(localStorage.getItem(rateKey)) || defaultRate;
+  var chartInstances = {};
+
+  function loadExpenses() { try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { return []; } }
+
+  // Convert amount from its native currency to display currency
+  function toDisplay(amount, fromCurrency) {
+    if (fromCurrency === displayCurrency) return amount;
+    if (displayCurrency === 'CAD') return amount * exchangeRate; // base -> CAD
+    if (fromCurrency === 'CAD') return amount / exchangeRate; // CAD -> base
+    return amount; // shouldn't happen
+  }
+
+  function sym() {
+    if (displayCurrency === 'CAD') return '$';
+    if (displayCurrency === 'EUR') return '€';
+    if (displayCurrency === 'USD') return '$';
+    if (displayCurrency === 'TWD') return 'NT$';
+    return displayCurrency + ' ';
+  }
+
+  function fmtAmount(amount, fromCurrency) { return sym() + toDisplay(amount, fromCurrency).toFixed(2); }
+  function fmtRound(amount, fromCurrency) { return sym() + Math.round(toDisplay(amount, fromCurrency)).toLocaleString(); }
+
+  function update() {
+    var expenses = loadExpenses();
+    var byCat = {}, byItem = {}, unassignedByCat = {};
+    var totalActual = 0;
+    expenses.forEach(function(e) {
+      var cur = e.currency || baseCurrency;
+      var d = toDisplay(e.amount || 0, cur);
+      totalActual += d;
+      if (!byCat[e.category]) byCat[e.category] = 0;
+      byCat[e.category] += d;
+      if (e.itemId) {
+        if (!byItem[e.itemId]) byItem[e.itemId] = 0;
+        byItem[e.itemId] += d;
+      } else {
+        if (!unassignedByCat[e.category]) unassignedByCat[e.category] = [];
+        unassignedByCat[e.category].push(e);
+      }
+    });
+
+    // Per-item estimated
+    var totalEst = 0;
+    var catEst = {};
+    budgetMeta.forEach(function(c) {
+      catEst[c.id] = 0;
+      c.items.forEach(function(item) {
+        var e = toDisplay(item.estimated, item.currency);
+        totalEst += e;
+        catEst[c.id] += e;
+      });
+    });
+    document.querySelectorAll('.item-estimated').forEach(function(el) {
+      var row = el.closest('.budget-row');
+      var est = parseFloat(row.getAttribute('data-estimated')) || 0;
+      var cur = row.getAttribute('data-item-currency') || baseCurrency;
+      el.textContent = fmtRound(est, cur);
+    });
+    document.querySelectorAll('.item-actual').forEach(function(el) {
+      var id = el.getAttribute('data-item-actual');
+      var v = byItem[id] || 0;
+      el.textContent = v > 0 ? sym() + v.toFixed(2) : '—';
+      var row = el.closest('.budget-row');
+      var est = parseFloat(row.getAttribute('data-estimated')) || 0;
+      var cur = row.getAttribute('data-item-currency') || baseCurrency;
+      var estDisp = toDisplay(est, cur);
+      row.classList.remove('over-budget', 'under-budget');
+      if (v > 0 && v > estDisp) row.classList.add('over-budget');
+      else if (v > 0) row.classList.add('under-budget');
+    });
+
+    document.querySelectorAll('.category-estimated').forEach(function(el) {
+      var id = el.getAttribute('data-cat-id');
+      el.textContent = 'Est: ' + sym() + Math.round(catEst[id] || 0).toLocaleString();
+    });
+    document.querySelectorAll('.category-actual').forEach(function(el) {
+      var id = el.getAttribute('data-cat-actual');
+      var v = byCat[id] || 0;
+      el.textContent = 'Actual: ' + sym() + v.toFixed(2);
+      el.classList.remove('over', 'under');
+      if (v > 0 && v > (catEst[id] || 0)) el.classList.add('over');
+      else if (v > 0) el.classList.add('under');
+    });
+
+    // Unassigned expenses as dynamic rows
+    document.querySelectorAll('.budget-expenses-dynamic').forEach(function(container) {
+      var catId = container.getAttribute('data-cat-expenses');
+      var catExp = unassignedByCat[catId] || [];
+      if (catExp.length === 0) { container.innerHTML = ''; return; }
+      var html = '';
+      catExp.forEach(function(exp) {
+        var cur = exp.currency || baseCurrency;
+        html += '<div class="budget-row budget-row-dynamic">';
+        html += '<div class="budget-item-info">';
+        html += '<span class="budget-label">' + esc(exp.description) + '</span>';
+        var meta = [];
+        if (exp.city) meta.push(exp.city);
+        if (exp.date) meta.push(exp.date);
+        if (meta.length) html += '<span class="budget-note">' + meta.join(' · ') + '</span>';
+        html += '</div><div class="budget-amounts"><div class="amount-group"><span class="amount-label">Estimated</span><span class="amount-value">—</span></div>';
+        html += '<div class="amount-group"><span class="amount-label">Actual</span><span class="amount-value">' + fmtAmount(exp.amount, cur) + '</span></div></div></div>';
+      });
+      container.innerHTML = html;
+    });
+
+    var elEst = document.getElementById('total-estimated');
+    var elAct = document.getElementById('total-actual');
+    var elRem = document.getElementById('total-remaining');
+    var elProg = document.getElementById('budget-progress');
+    var elProgText = document.getElementById('budget-progress-text');
+    if (elEst) elEst.textContent = sym() + Math.round(totalEst).toLocaleString();
+    if (elAct) elAct.textContent = sym() + Math.round(totalActual).toLocaleString();
+    var rem = totalEst - totalActual;
+    if (elRem) {
+      elRem.textContent = (rem < 0 ? '-' : '') + sym() + Math.abs(Math.round(rem)).toLocaleString();
+      elRem.classList.toggle('over', rem < 0);
+    }
+    var pct = totalEst > 0 ? Math.min(Math.round(totalActual / totalEst * 100), 100) : 0;
+    if (elProg) { elProg.style.width = pct + '%'; elProg.classList.toggle('over', totalActual > totalEst); }
+    if (elProgText) elProgText.textContent = pct + '% of budget spent';
+
+    renderCharts(byCat, expenses, catEst);
+  }
+
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  function renderCharts(byCat, expenses, catEst) {
+    if (typeof Chart === 'undefined') return;
+    var fontFamily = "'Jost', system-ui, sans-serif";
+    var colors = ['#006B3F', '#C62D2D', '#D4A629', '#1B3A6B', '#B5560A', '#7B2D8E', '#2D6A4F', '#C9981A', '#5C5550', '#3A7CA5'];
+    var baseOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { family: fontFamily, size: 12 }, padding: 12 } } } };
+
+    var labels = budgetMeta.map(function(c) { return c.title; });
+    var estimates = budgetMeta.map(function(c) { return catEst[c.id] || 0; });
+    var actuals = budgetMeta.map(function(c) { return byCat[c.id] || 0; });
+
+    var ctx1 = document.getElementById('chart-est-vs-actual');
+    if (ctx1) {
+      if (chartInstances.estVsActual) chartInstances.estVsActual.destroy();
+      chartInstances.estVsActual = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Estimated', data: estimates, backgroundColor: 'rgba(0, 107, 63, 0.25)', borderColor: '#006B3F', borderWidth: 1 },
+            { label: 'Actual', data: actuals, backgroundColor: 'rgba(198, 45, 45, 0.25)', borderColor: '#C62D2D', borderWidth: 1 },
+          ]
+        },
+        options: Object.assign({}, baseOpts, {
+          indexAxis: 'y',
+          plugins: {
+            legend: baseOpts.plugins.legend,
+            tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + sym() + ctx.parsed.x.toFixed(2); } } }
+          },
+          scales: {
+            x: { ticks: { callback: function(v) { return sym() + v; }, font: { family: fontFamily, size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+            y: { ticks: { font: { family: fontFamily, size: 11 } }, grid: { display: false } }
+          }
+        })
+      });
+    }
+
+    var ctx2 = document.getElementById('chart-by-category');
+    if (ctx2) {
+      var sl = [], sv = [], sc = [];
+      budgetMeta.forEach(function(c, i) {
+        var v = byCat[c.id] || 0;
+        if (v > 0) { sl.push(c.title); sv.push(v); sc.push(colors[i % colors.length]); }
+      });
+      if (chartInstances.byCategory) chartInstances.byCategory.destroy();
+      if (sv.length === 0) {
+        chartInstances.byCategory = null;
+        ctx2.parentElement.innerHTML = '<canvas id="chart-by-category"></canvas><p class="chart-empty">No expenses logged yet</p>';
+      } else {
+        chartInstances.byCategory = new Chart(ctx2, {
+          type: 'doughnut',
+          data: { labels: sl, datasets: [{ data: sv, backgroundColor: sc, borderWidth: 2, borderColor: '#FAF7F2' }] },
+          options: Object.assign({}, baseOpts, {
+            plugins: {
+              legend: { position: 'bottom', labels: { font: { family: fontFamily, size: 11 }, padding: 10, usePointStyle: true } },
+              tooltip: { callbacks: { label: function(ctx) { var t = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0); return ctx.label + ': ' + sym() + ctx.parsed.toFixed(2) + ' (' + Math.round(ctx.parsed / t * 100) + '%)'; } } }
+            }
+          })
+        });
+      }
+    }
+
+    var ctx3 = document.getElementById('chart-by-city');
+    if (ctx3 && cityNames.length > 1) {
+      var cityTotals = {};
+      cityNames.forEach(function(n) { cityTotals[n] = 0; });
+      var otherTotal = 0;
+      expenses.forEach(function(e) {
+        var cur = e.currency || baseCurrency;
+        var d = toDisplay(e.amount || 0, cur);
+        if (e.city && cityTotals.hasOwnProperty(e.city)) cityTotals[e.city] += d;
+        else otherTotal += d;
+      });
+      var cl = [], cv = [];
+      cityNames.forEach(function(n) { if (cityTotals[n] > 0) { cl.push(n); cv.push(cityTotals[n]); } });
+      if (otherTotal > 0) { cl.push('Other'); cv.push(otherTotal); }
+      var cc = ['#1B3A6B', '#2D6A4F', '#B5560A', '#7B2D8E', '#C62D2D', '#9E9890'];
+      if (chartInstances.byCity) chartInstances.byCity.destroy();
+      if (cv.length === 0) {
+        chartInstances.byCity = null;
+        ctx3.parentElement.innerHTML = '<canvas id="chart-by-city"></canvas><p class="chart-empty">No expenses logged yet</p>';
+      } else {
+        chartInstances.byCity = new Chart(ctx3, {
+          type: 'doughnut',
+          data: { labels: cl, datasets: [{ data: cv, backgroundColor: cc.slice(0, cl.length), borderWidth: 2, borderColor: '#FAF7F2' }] },
+          options: Object.assign({}, baseOpts, {
+            plugins: {
+              legend: { position: 'bottom', labels: { font: { family: fontFamily, size: 11 }, padding: 10, usePointStyle: true } },
+              tooltip: { callbacks: { label: function(ctx) { var t = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0); return ctx.label + ': ' + sym() + ctx.parsed.toFixed(2) + ' (' + Math.round(ctx.parsed / t * 100) + '%)'; } } }
+            }
+          })
+        });
+      }
+    }
+  }
+
+  function updateCurrencyUI() {
+    document.querySelectorAll('.currency-btn').forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-currency') === displayCurrency);
+    });
+    var r = document.getElementById('exchange-rate');
+    if (r) r.value = exchangeRate;
+  }
+
+  function init() {
+    document.querySelectorAll('.currency-btn').forEach(function(b) {
+      b.addEventListener('click', function() {
+        displayCurrency = b.getAttribute('data-currency');
+        localStorage.setItem(displayKey, displayCurrency);
+        updateCurrencyUI();
+        update();
+      });
+    });
+    var rateInput = document.getElementById('exchange-rate');
+    if (rateInput) {
+      rateInput.value = exchangeRate;
+      rateInput.addEventListener('input', function() {
+        var v = parseFloat(rateInput.value);
+        if (!isNaN(v) && v > 0) {
+          exchangeRate = v;
+          localStorage.setItem(rateKey, v.toString());
+          update();
+        }
+      });
+    }
+    updateCurrencyUI();
+    update();
+
+    // Subnav active state
+    var subnavLinks = document.querySelectorAll('.subnav-link');
+    function updateSubnav() {
+      var scrollY = window.scrollY + 130;
+      var active = '';
+      subnavLinks.forEach(function(link) {
+        var href = link.getAttribute('href');
+        var id = href && href.charAt(0) === '#' ? href.slice(1) : '';
+        var el = id ? document.getElementById(id) : null;
+        if (el && el.offsetTop <= scrollY) active = id;
+      });
+      subnavLinks.forEach(function(link) { link.classList.toggle('active', link.getAttribute('href') === '#' + active); });
+    }
+    window.addEventListener('scroll', updateSubnav, { passive: true });
+    updateSubnav();
+
+    // Listen for changes from other tabs
+    window.addEventListener('storage', update);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+
+<style>
+  .budget-hero { padding: 3rem 2rem 2.5rem; text-align: center; border-bottom: 1px solid var(--cream-dark); }
+  .budget-hero-inner { max-width: 700px; margin: 0 auto; }
+  .budget-eyebrow { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; }
+  .budget-title { font-family: var(--font-display); font-size: clamp(2.3rem, 7vw, 4rem); font-weight: 300; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+  .budget-subtitle { font-size: 1rem; color: var(--ink-muted); margin-bottom: 1.5rem; line-height: 1.6; }
+
+  .currency-controls { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .currency-toggle { display: flex; align-items: center; gap: 0.4rem; }
+  .currency-toggle-label { font-size: 0.78rem; color: var(--ink-faint); margin-right: 0.25rem; }
+  .currency-btn {
+    padding: 0.35rem 0.85rem; border: 1px solid var(--cream-dark); border-radius: 20px; background: white;
+    font-family: var(--font-body); font-size: 0.8rem; font-weight: 500; color: var(--ink-muted); cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .currency-btn:hover { border-color: var(--ink-faint); }
+  .currency-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .exchange-rate-group { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--ink-muted); }
+  .exchange-rate-group input { width: 80px; padding: 0.3rem 0.4rem; border: 1px solid var(--cream-dark); border-radius: var(--radius); font-family: var(--font-body); font-size: 0.8rem; text-align: center; background: white; }
+  .exchange-rate-group input:focus { outline: none; border-color: var(--accent); }
+
+  .budget-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .summary-card { background: white; border-radius: var(--radius-lg); padding: 1.1rem 1rem; display: flex; flex-direction: column; gap: 0.3rem; }
+  .summary-label { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+  .summary-value { font-family: var(--font-display); font-size: 1.4rem; font-weight: 500; color: var(--ink); }
+  .summary-value.over { color: var(--pt-red); }
+
+  .progress-container { max-width: 500px; margin: 0 auto; }
+  .progress-bar { height: 8px; background: var(--cream-dark); border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem; }
+  .progress-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+  .progress-fill.over { background: var(--pt-red); }
+  .progress-text { font-size: 0.78rem; color: var(--ink-faint); }
+
+  .budget-subnav { position: sticky; top: 60px; z-index: 90; background: rgba(248, 244, 238, 0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--cream-dark); padding: 0 2rem; }
+  .subnav-inner { max-width: 800px; margin: 0 auto; display: flex; gap: 0.25rem; overflow-x: auto; scrollbar-width: none; }
+  .subnav-inner::-webkit-scrollbar { display: none; }
+  .subnav-link { font-size: 0.78rem; white-space: nowrap; padding: 0.7rem 0.85rem; color: var(--ink-muted); border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .subnav-link:hover { color: var(--ink); border-bottom-color: var(--cream-dark); }
+  .subnav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
+  :target { scroll-margin-top: 110px; }
+
+  .phase-header { padding: 2rem 2rem 0.5rem; border-top: 2px solid var(--cream-dark); }
+  .phase-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 400; margin-bottom: 0.25rem; }
+  .phase-subtitle { font-size: 0.85rem; color: var(--ink-faint); }
+
+  .section { padding: 1.5rem 2rem 2.5rem; }
+  .section-alt { background: white; }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  .category-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--cream-dark); flex-wrap: wrap; }
+  .category-emoji { font-size: 1.3rem; }
+  .category-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 500; color: var(--ink); flex: 1; }
+  .category-amounts { display: flex; gap: 0.5rem; align-items: center; }
+  .category-estimated, .category-actual { font-size: 0.76rem; font-weight: 500; color: var(--ink-faint); background: var(--cream-dark); padding: 0.2rem 0.65rem; border-radius: 20px; transition: background 0.2s, color 0.2s; }
+  .category-actual.under { color: var(--pt-green); background: var(--green-light); }
+  .category-actual.over { color: var(--pt-red); background: var(--terra-light); }
+
+  .budget-items { display: flex; flex-direction: column; }
+  :global(.budget-row) { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.7rem 0.4rem; border-bottom: 1px solid var(--cream-dark); transition: background 0.15s; }
+  :global(.budget-row:last-child) { border-bottom: none; }
+  :global(.budget-row.over-budget) { background: rgba(198,45,45,0.04); }
+  :global(.budget-row.under-budget) { background: rgba(0,107,63,0.04); }
+  :global(.budget-row-dynamic) { border-left: 3px solid var(--gold); padding-left: calc(0.4rem + 3px); }
+  :global(.budget-item-info) { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; min-width: 0; }
+  :global(.budget-label) { font-size: 0.9rem; color: var(--ink); line-height: 1.4; }
+  :global(.budget-note) { font-size: 0.78rem; color: var(--ink-faint); line-height: 1.4; }
+  :global(.budget-amounts) { display: flex; gap: 1.25rem; align-items: center; flex-shrink: 0; }
+  :global(.amount-group) { display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; }
+  :global(.amount-label) { font-size: 0.64rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+  :global(.amount-value) { font-size: 0.88rem; color: var(--ink-muted); }
+
+  .charts-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+  .chart-card { background: white; border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--cream-dark); }
+  .chart-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 500; margin-bottom: 1rem; text-align: center; }
+  .chart-wrapper { position: relative; height: 300px; }
+  .chart-wrapper-bar { height: 380px; }
+  :global(.chart-empty) { text-align: center; color: var(--ink-faint); font-size: 0.85rem; padding: 3rem 1rem; }
+
+  @media (min-width: 700px) {
+    .charts-grid { grid-template-columns: 1fr 1fr; }
+    .chart-card:first-child { grid-column: 1 / -1; }
+  }
+
+  .footnote { font-size: 0.9rem; color: var(--ink-muted); text-align: center; margin-top: 2rem; }
+  .footnote a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+
+  .fab {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 150;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--accent, var(--pt-green)); color: white;
+    font-size: 1.75rem; font-weight: 300;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    transition: transform 0.15s; line-height: 1;
+  }
+  .fab:hover { transform: scale(1.08); }
+
+  @media (max-width: 600px) {
+    .budget-summary { grid-template-columns: 1fr; }
+    .summary-card { flex-direction: row; justify-content: space-between; align-items: center; }
+    .budget-subnav { padding: 0 1rem; }
+    .section { padding: 1rem 1.25rem 1.5rem; }
+    .phase-header { padding: 1.5rem 1.25rem 0.5rem; }
+    .budget-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .budget-amounts { width: 100%; justify-content: space-between; }
+  }
+</style>
+
+<style>
+  header.budget-hero { --accent: var(--accent, var(--pt-green)); }
+</style>

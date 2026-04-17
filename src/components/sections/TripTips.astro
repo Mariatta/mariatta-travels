@@ -1,0 +1,96 @@
+---
+import type { TipCategory } from '../../data/types';
+
+interface Props {
+  categories: TipCategory[];
+  accentColor: string;
+}
+const { categories, accentColor } = Astro.props;
+---
+<section class="section section-alt" style={`--accent: ${accentColor}`}>
+  <div class="container">
+    <div class="section-label">Before You Go</div>
+    <h2 class="section-title">Travel tips</h2>
+    <p class="section-intro">Everything you need to know before the trip — money, weather, transport, and practical essentials.</p>
+
+    {categories.map(cat => (
+      <div class="tip-category">
+        <h3 class="tip-category-title">{cat.label}</h3>
+        <div class="tips-grid">
+          {cat.tips.map(t => (
+            <div class="tip-card">
+              <span class="tip-icon">{t.icon}</span>
+              <h4 class="tip-title">{t.title}</h4>
+              <p class="tip-body">{t.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .section { padding: 4rem 2rem; }
+  .section-alt { background: white; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 300;
+    margin-bottom: 1rem;
+  }
+  .section-intro {
+    font-size: 1rem;
+    color: var(--ink-muted);
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+    line-height: 1.75;
+  }
+
+  .tip-category { margin-bottom: 2.5rem; }
+  .tip-category:last-child { margin-bottom: 0; }
+  .tip-category-title {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .tip-card {
+    padding: 1.5rem;
+    border: 1px solid var(--cream-dark);
+    border-radius: var(--radius-lg);
+    background: var(--cream);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .tip-icon { font-size: 1.5rem; }
+  .tip-title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .tip-body { font-size: 0.875rem; color: var(--ink-muted); line-height: 1.65; }
+
+  @media (max-width: 600px) {
+    .section { padding: 2.5rem 1.25rem; }
+  }
+</style>

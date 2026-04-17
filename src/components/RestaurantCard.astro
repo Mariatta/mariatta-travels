@@ -1,0 +1,92 @@
+---
+import type { Restaurant } from '../data/types';
+const { restaurant } = Astro.props as { restaurant: Restaurant };
+---
+
+<div class="rest-card">
+  <div class="card-top">
+    <h3 class="card-name">{restaurant.name}</h3>
+    <div class="rating">
+      <span class="rating-star">★</span>
+      <span class="rating-score">{restaurant.rating}</span>
+      <span class="rating-count">({restaurant.ratingCount})</span>
+    </div>
+  </div>
+
+  <div class="tags">
+    <span class="tag price-tag">{restaurant.price}</span>
+    {restaurant.bookAhead && <span class="tag book-tag">Book ahead</span>}
+    {restaurant.tags.map(t => <span class="tag">{t}</span>)}
+  </div>
+
+  <p class="card-desc">{restaurant.description}</p>
+
+  <div class="card-footer">
+    <div class="must-try">
+      <span class="must-try-label">Must try</span>
+      <span class="must-try-text">{restaurant.mustTry}</span>
+    </div>
+    {restaurant.hours && (
+      <p class="hours">{restaurant.hours}</p>
+    )}
+  </div>
+</div>
+
+<style>
+  .rest-card {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .rest-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    transform: translateY(-2px);
+  }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+  .card-name {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .rating { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
+  .rating-star { color: var(--pt-yellow); font-size: 0.85rem; }
+  .rating-score { font-size: 0.85rem; font-weight: 500; }
+  .rating-count { font-size: 0.75rem; color: var(--ink-faint); }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    background: var(--cream-dark);
+    color: var(--ink-muted);
+  }
+  .price-tag { background: var(--gold-light); color: var(--gold); font-weight: 500; }
+  .book-tag { background: var(--terra-light); color: var(--pt-red); font-weight: 500; }
+  .card-desc { font-size: 0.875rem; color: var(--ink-muted); line-height: 1.65; }
+  .card-footer {
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--cream-dark);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .must-try { display: flex; flex-direction: column; gap: 0.1rem; }
+  .must-try-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pt-red);
+  }
+  .must-try-text { font-size: 0.82rem; color: var(--ink); font-style: italic; font-family: var(--font-display); }
+  .hours { font-size: 0.75rem; color: var(--ink-faint); }
+</style>

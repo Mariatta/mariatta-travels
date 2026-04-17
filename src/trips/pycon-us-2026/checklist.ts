@@ -1,0 +1,98 @@
+import type { ChecklistCategory } from '../../data/types';
+
+export const checklistData: ChecklistCategory[] = [
+  {
+    id: 'flights',
+    title: 'Flights & Transport',
+    emoji: '✈️',
+    items: [
+      { id: 'flights-book', label: 'Book YVR to LAX (or LGB) round-trip flight', dueBy: 'ASAP', note: 'Direct LAX flights are plentiful; LGB is limited but possible' },
+      { id: 'flights-seat', label: 'Select seat and check in online', dueBy: 'May 13' },
+      { id: 'flights-airport-transport', label: 'Plan LAX ↔ Long Beach transport (Uber/Lyft or FlyAway bus)' },
+    ],
+  },
+  {
+    id: 'accommodation',
+    title: 'Accommodation',
+    emoji: '🏨',
+    items: [
+      { id: 'hotel-block', label: 'Book Long Beach hotel (4 nights, May 14–18) inside the PyCon room block', dueBy: 'Feb 2026', url: 'https://us.pycon.org/2026/', note: 'Block fills up fast — book as soon as it opens' },
+      { id: 'hotel-lax', label: 'Book LAX-area hotel for Mon May 18 (1 night, work-from-hotel Tue before evening flight)', dueBy: 'Apr 2026', note: 'Suite with desk preferred' },
+      { id: 'hotel-confirm', label: 'Confirm both hotel reservations 1 week before departure', dueBy: 'May 7' },
+      { id: 'hotel-early-checkin', label: 'Request early check-in for Long Beach if arriving before 3pm on May 14' },
+      { id: 'hotel-mon-transfer', label: 'Plan Mon May 18 transfer from Long Beach to LAX hotel (Uber/Lyft, ~$45–60)' },
+    ],
+  },
+  {
+    id: 'pycon',
+    title: 'PyCon US 2026',
+    emoji: '🐍',
+    items: [
+      { id: 'pycon-register', label: 'Register for PyCon US 2026', url: 'https://us.pycon.org/2026/registration/' },
+      { id: 'pycon-speaker-confirm', label: 'Confirmed: Sat May 16, 12:00–12:45 PM · Grand Ballroom A · "No More Spreadsheets! Building PyLadiesCon Infrastructure with Python and Django"', url: 'https://us.pycon.org/2026/schedule/presentation/80/' },
+      { id: 'pycon-talk-prep', label: 'Prepare talk slides, demo, and speaker notes', dueBy: 'May 1' },
+      { id: 'pycon-talk-rehearse', label: 'Rehearse talk — aim for 3–4 run-throughs', dueBy: 'May 10' },
+      { id: 'pycon-demo-test', label: 'Test demo on conference projector setup (1080p/16:9)', note: 'Bring HDMI + USB-C adapters' },
+      { id: 'pycon-slides-backup', label: 'Back up slides to laptop, USB stick, and cloud' },
+      { id: 'pycon-schedule', label: 'Review PyCon schedule and mark sessions to attend', url: 'https://us.pycon.org/2026/schedule/' },
+      { id: 'pycon-sprints', label: 'Review sprint options for Mon–Tue (May 18–19)', url: 'https://us.pycon.org/2026/events/sprints/' },
+      { id: 'pycon-social', label: 'Check for PyLadies auction, PyCon dinner, opening reception' },
+      { id: 'pycon-ice-cream', label: 'Scout ice cream selfie spot near venue 🍦', note: 'Long Beach Creamery, Handel\'s, Romeo Chocolates, or Afters' },
+    ],
+  },
+  {
+    id: 'documents',
+    title: 'Documents & Travel',
+    emoji: '🛂',
+    items: [
+      { id: 'docs-passport', label: 'Check passport validity', note: 'Canadian citizens need valid passport for US entry' },
+      { id: 'docs-nexus', label: 'Check NEXUS card expiry (speeds up airport pre-clearance at YVR)' },
+      { id: 'docs-insurance', label: 'Arrange travel insurance (medical coverage in the US)', dueBy: 'Apr 2026', note: 'Canadian provincial health coverage is limited in the US' },
+      { id: 'docs-hotel-pdf', label: 'Save hotel confirmation PDF to phone' },
+      { id: 'docs-flight-pdf', label: 'Save flight confirmation PDF to phone' },
+      { id: 'docs-bank-notify', label: 'Notify bank and credit card companies of US travel dates', dueBy: 'May 2026' },
+    ],
+  },
+  {
+    id: 'money-tech',
+    title: 'Money & Connectivity',
+    emoji: '💳',
+    items: [
+      { id: 'tech-roaming', label: 'Set up US roaming or eSIM for data', dueBy: 'May 2026' },
+      { id: 'tech-rideshare', label: 'Ensure Uber/Lyft apps are set up with payment' },
+      { id: 'money-usd', label: 'Bring $50–100 USD in small bills for tips / emergencies', note: 'Most places are card-first; small cash helps for tips' },
+      { id: 'money-tap', label: 'Ensure tap-to-pay is set up (Apple Pay / Google Pay)', note: 'Works on Metro A Line and at most shops' },
+    ],
+  },
+  {
+    id: 'packing',
+    title: 'Packing',
+    emoji: '🧳',
+    items: [
+      { id: 'pack-talk-outfit', label: 'Pack speaker outfit — something comfortable and on-camera friendly' },
+      { id: 'pack-laptop', label: 'Laptop + charger + adapters (HDMI, USB-C)' },
+      { id: 'pack-layers', label: 'Layers — Long Beach in May is 15–22°C; evenings near the water are cool' },
+      { id: 'pack-walking-shoes', label: 'Comfortable walking shoes — convention floors are brutal on feet' },
+      { id: 'pack-sunglasses', label: 'Sunglasses + sunscreen — SoCal May sun is strong' },
+      { id: 'pack-charger', label: 'Portable power bank' },
+      { id: 'pack-reusable-bottle', label: 'Reusable water bottle (convention centre has refill stations)' },
+      { id: 'pack-daypack', label: 'Day backpack for conference and sightseeing' },
+      { id: 'pack-meds', label: 'Medications and basic essentials' },
+    ],
+  },
+  {
+    id: 'before-departure',
+    title: 'Before Departure',
+    emoji: '🏠',
+    items: [
+      { id: 'pre-fish-fill', label: 'Fill both fish feeders 🐟' },
+      { id: 'pre-fish-charge', label: 'Charge both fish feeders (or fresh batteries)' },
+      { id: 'pre-fish-test', label: 'Test-fire both fish feeders before leaving' },
+      { id: 'pre-fish-water', label: 'Top up tank water / run a water change' },
+      { id: 'pre-itinerary', label: 'Share itinerary and hotel info with an emergency contact' },
+      { id: 'pre-offline-maps', label: 'Download offline Google Maps for Long Beach / LAX area' },
+      { id: 'pre-confirm-48h', label: 'Confirm all bookings 48 hours before departure', dueBy: 'May 12' },
+      { id: 'pre-charge-devices', label: 'Charge all devices + power bank the night before' },
+    ],
+  },
+];

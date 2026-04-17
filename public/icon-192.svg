@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <clipPath id="rounded">
+      <rect width="192" height="192" rx="36"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#rounded)">
+    <polygon points="0,0 192,0 0,192" fill="#006B3F"/>
+    <polygon points="192,0 192,192 0,192" fill="#C62D2D"/>
+  </g>
+  <text x="96" y="128" font-family="Georgia, 'Times New Roman', serif" font-size="110" font-weight="bold" text-anchor="middle" fill="white" letter-spacing="1">M</text>
+  <text x="96" y="170" font-family="Georgia, 'Times New Roman', serif" font-size="22" text-anchor="middle" fill="rgba(255,255,255,0.85)" letter-spacing="8">MARIATTA</text>
+</svg>

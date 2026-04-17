@@ -1,0 +1,253 @@
+---
+import TripLayout from '../../layouts/TripLayout.astro';
+import { trips } from '../../data/trips';
+
+export function getStaticPaths() {
+  return trips
+    .filter(t => t.sections.includes('sync'))
+    .map(t => ({ params: { trip: t.id }, props: { trip: t } }));
+}
+
+const { trip } = Astro.props;
+const budgetKey = `travels-budget-${trip.id}`;
+const checklistKey = `travels-checklist-${trip.id}`;
+const fileStem = `${trip.id}-data`;
+---
+<TripLayout trip={trip} section="sync" pageTitle={`${trip.shortTitle} · Import / Export`} pageLabel="Sync">
+  <header class="sync-hero" style={`--accent: ${trip.accentColor}`}>
+    <div class="sync-hero-inner">
+      <p class="sync-eyebrow">Data Sync</p>
+      <h1 class="sync-page-title">Import / Export</h1>
+      <p class="sync-subtitle">Move your expenses and checklist between devices. Export from one, import on another.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <div class="sync-grid">
+          <div class="sync-card">
+            <h2 class="sync-title">Export</h2>
+            <p class="sync-desc">Download your data as a JSON file, or copy it to the clipboard for quick paste.</p>
+            <div class="sync-actions">
+              <button type="button" class="btn-primary" id="btn-export">Export Data</button>
+              <button type="button" class="btn-outline" id="btn-copy">Copy to Clipboard</button>
+            </div>
+          </div>
+          <div class="sync-card">
+            <h2 class="sync-title">Import</h2>
+            <p class="sync-desc">Load data from a file or paste it below. Choose to merge with or replace existing data on this device.</p>
+            <div class="sync-import-options">
+              <label class="sync-file-label" for="import-file">
+                <span class="btn-primary btn-file">Choose File</span>
+                <input type="file" id="import-file" accept=".json" />
+              </label>
+              <span class="sync-or">or paste below</span>
+            </div>
+            <textarea id="import-text" class="sync-textarea" rows="6" placeholder="Paste exported JSON here..."></textarea>
+            <div class="sync-actions">
+              <button type="button" class="btn-primary" id="btn-import-merge">Merge with Existing</button>
+              <button type="button" class="btn-secondary" id="btn-import-replace">Replace All</button>
+            </div>
+            <p class="sync-status" id="sync-status"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</TripLayout>
+
+<script is:inline define:vars={{ budgetKey, checklistKey, fileStem, tripId: trip.id }}>
+(function() {
+  function loadBudget() { try { return JSON.parse(localStorage.getItem(budgetKey) || '[]'); } catch { return []; } }
+  function loadChecklist() { try { return JSON.parse(localStorage.getItem(checklistKey) || '{}'); } catch { return {}; } }
+  function saveBudget(d) { localStorage.setItem(budgetKey, JSON.stringify(d)); }
+  function saveChecklist(d) { localStorage.setItem(checklistKey, JSON.stringify(d)); }
+
+  var statusEl = document.getElementById('sync-status');
+  function showStatus(msg, isError) {
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.className = 'sync-status ' + (isError ? 'sync-error' : 'sync-success');
+    setTimeout(function() { statusEl.textContent = ''; statusEl.className = 'sync-status'; }, 4000);
+  }
+
+  function getExportData() {
+    return JSON.stringify({
+      version: 1,
+      tripId: tripId,
+      exportedAt: new Date().toISOString(),
+      expenses: loadBudget(),
+      checklist: loadChecklist(),
+    }, null, 2);
+  }
+
+  document.getElementById('btn-export').addEventListener('click', function() {
+    var data = getExportData();
+    var blob = new Blob([data], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = fileStem + '-' + new Date().toISOString().split('T')[0] + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showStatus('Exported ' + fileStem + '.json');
+  });
+
+  document.getElementById('btn-copy').addEventListener('click', function() {
+    var data = getExportData();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(data).then(
+        function() { showStatus('Copied to clipboard'); },
+        function() { showStatus('Failed to copy — try Export instead', true); }
+      );
+    } else {
+      showStatus('Clipboard not available — try Export instead', true);
+    }
+  });
+
+  function importData(jsonStr, mode) {
+    var parsed;
+    try { parsed = JSON.parse(jsonStr); }
+    catch { showStatus('Invalid JSON — could not parse the data', true); return; }
+
+    var incomingExpenses = Array.isArray(parsed) ? parsed : (parsed.expenses || []);
+    var incomingChecklist = parsed.checklist || null;
+
+    if (!Array.isArray(incomingExpenses)) {
+      showStatus('Invalid format — expected an array of expenses', true);
+      return;
+    }
+    for (var i = 0; i < incomingExpenses.length; i++) {
+      var e = incomingExpenses[i];
+      if (!e || !e.description || typeof e.amount !== 'number') {
+        showStatus('Invalid expense at entry ' + (i + 1) + ' — missing description or amount', true);
+        return;
+      }
+    }
+
+    var addedExpenses = 0;
+    if (mode === 'replace') {
+      saveBudget(incomingExpenses);
+      if (incomingChecklist && typeof incomingChecklist === 'object') saveChecklist(incomingChecklist);
+      showStatus('Replaced all data · ' + incomingExpenses.length + ' expense(s) imported');
+    } else {
+      var existing = loadBudget();
+      var existingIds = {};
+      existing.forEach(function(e) { existingIds[e.id] = true; });
+      incomingExpenses.forEach(function(e) {
+        if (!existingIds[e.id]) { existing.push(e); addedExpenses++; }
+      });
+      saveBudget(existing);
+      if (incomingChecklist && typeof incomingChecklist === 'object') {
+        var curr = loadChecklist();
+        Object.keys(incomingChecklist).forEach(function(k) { if (incomingChecklist[k]) curr[k] = true; });
+        saveChecklist(curr);
+      }
+      showStatus('Merged · ' + addedExpenses + ' new expense(s), ' + (incomingExpenses.length - addedExpenses) + ' duplicate(s) skipped');
+    }
+
+    document.getElementById('import-text').value = '';
+  }
+
+  document.getElementById('btn-import-merge').addEventListener('click', function() {
+    var text = document.getElementById('import-text').value.trim();
+    if (!text) { showStatus('No data to import — paste JSON or choose a file', true); return; }
+    importData(text, 'merge');
+  });
+
+  document.getElementById('btn-import-replace').addEventListener('click', function() {
+    var text = document.getElementById('import-text').value.trim();
+    if (!text) { showStatus('No data to import — paste JSON or choose a file', true); return; }
+    if (!confirm('This will replace all existing expenses and checklist state for this trip. Continue?')) return;
+    importData(text, 'replace');
+  });
+
+  document.getElementById('import-file').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      document.getElementById('import-text').value = ev.target.result;
+      showStatus('File loaded — click Merge or Replace to import');
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+})();
+</script>
+
+<style>
+  .sync-hero { padding: 3rem 2rem 2rem; text-align: center; border-bottom: 1px solid var(--cream-dark); }
+  .sync-hero-inner { max-width: 600px; margin: 0 auto; }
+  .sync-eyebrow { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; }
+  .sync-page-title { font-family: var(--font-display); font-size: clamp(2.3rem, 7vw, 4rem); font-weight: 300; margin-bottom: 0.75rem; letter-spacing: -0.02em; }
+  .sync-subtitle { font-size: 1rem; color: var(--ink-muted); line-height: 1.6; }
+
+  .section { padding: 2.5rem 2rem 3rem; }
+  .container { max-width: 900px; margin: 0 auto; }
+
+  .sync-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .sync-card { background: white; border: 1px solid var(--cream-dark); border-radius: var(--radius-lg); padding: 1.5rem; }
+  .sync-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 500; color: var(--ink); margin-bottom: 0.5rem; }
+  .sync-desc { font-size: 0.85rem; color: var(--ink-muted); margin-bottom: 1.25rem; line-height: 1.5; }
+  .sync-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+  .btn-primary {
+    display: inline-flex; align-items: center;
+    padding: 0.6rem 1.5rem;
+    background: var(--accent);
+    color: white; border: none; border-radius: var(--radius);
+    font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; letter-spacing: 0.05em;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-outline {
+    padding: 0.6rem 1.5rem;
+    background: none; color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; letter-spacing: 0.05em;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-outline:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .btn-secondary {
+    padding: 0.6rem 1.5rem;
+    background: none; color: var(--ink-muted);
+    border: 1px solid var(--cream-dark); border-radius: var(--radius);
+    font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; letter-spacing: 0.05em;
+    cursor: pointer; transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-secondary:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  .sync-import-options { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .sync-file-label { cursor: pointer; }
+  .sync-file-label input[type="file"] { position: absolute; width: 0; height: 0; opacity: 0; overflow: hidden; }
+  .btn-file { display: inline-block; cursor: pointer; }
+  .sync-or { font-size: 0.8rem; color: var(--ink-faint); }
+
+  .sync-textarea {
+    width: 100%; padding: 0.6rem;
+    border: 1px solid var(--cream-dark); border-radius: var(--radius);
+    font-family: ui-monospace, monospace; font-size: 0.78rem; color: var(--ink);
+    background: var(--cream); resize: vertical;
+    margin-bottom: 1rem; line-height: 1.5;
+  }
+  .sync-textarea:focus { outline: none; border-color: var(--accent); }
+
+  .sync-status { font-size: 0.82rem; margin-top: 0.75rem; min-height: 1.2em; }
+  .sync-success { color: var(--pt-green); }
+  .sync-error { color: var(--pt-red); }
+
+  @media (max-width: 700px) {
+    .sync-hero { padding: 2.5rem 1.5rem 1.5rem; }
+    .section { padding: 1.5rem 1.25rem 2rem; }
+    .sync-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<style>
+  header.sync-hero { --accent: var(--accent, var(--pt-green)); }
+</style>

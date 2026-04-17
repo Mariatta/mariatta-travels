@@ -1,0 +1,294 @@
+---
+import TripLayout from '../../layouts/TripLayout.astro';
+import { trips } from '../../data/trips';
+
+export function getStaticPaths() {
+  return trips
+    .filter(t => t.sections.includes('log'))
+    .map(t => ({ params: { trip: t.id }, props: { trip: t } }));
+}
+
+const { trip } = Astro.props;
+const storageKey = `travels-budget-${trip.id}`;
+const baseCurrency = trip.baseCurrency;
+const cityNames = trip.cities.map(c => c.name);
+const budgetMeta = trip.budget.map(c => ({
+  id: c.id,
+  title: c.title,
+  emoji: c.emoji,
+  items: c.items.map(i => ({ id: i.id, label: i.label })),
+}));
+---
+<TripLayout trip={trip} section="log" pageTitle={`${trip.shortTitle} · Log Expense`} pageLabel="Log">
+  <header class="log-hero" style={`--accent: ${trip.accentColor}`}>
+    <div class="log-hero-inner">
+      <p class="log-eyebrow">Expense Log</p>
+      <h1 class="log-title">Log an Expense</h1>
+      <p class="log-subtitle">Track individual purchases during the trip. Entries stay on this device.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <form id="expense-form" class="expense-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="expense-desc">Description</label>
+              <input type="text" id="expense-desc" placeholder="e.g. Lunch" required />
+            </div>
+            <div class="form-group form-group-small">
+              <label for="expense-amount">Amount</label>
+              <input type="number" id="expense-amount" placeholder="0.00" min="0" step="0.01" required />
+            </div>
+            <div class="form-group form-group-small">
+              <label for="expense-currency">Currency</label>
+              <select id="expense-currency">
+                <option value={baseCurrency}>{baseCurrency}</option>
+                <option value="CAD">CAD</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="expense-category">Category</label>
+              <select id="expense-category"></select>
+            </div>
+            <div class="form-group">
+              <label for="expense-item">Budget Item</label>
+              <select id="expense-item"><option value="">— Any —</option></select>
+            </div>
+            {cityNames.length > 1 && (
+              <div class="form-group form-group-small">
+                <label for="expense-city">City</label>
+                <select id="expense-city">
+                  <option value="">—</option>
+                  {cityNames.map(c => <option value={c}>{c}</option>)}
+                </select>
+              </div>
+            )}
+            <div class="form-group form-group-small">
+              <label for="expense-date">Date</label>
+              <input type="date" id="expense-date" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-add" id="btn-submit">Add Expense</button>
+            <button type="button" class="btn-cancel" id="btn-cancel" style="display:none;">Cancel</button>
+          </div>
+        </form>
+
+        <h3 class="log-details-title">Expenses</h3>
+        <div id="expense-list" class="expense-list"></div>
+        <p class="expense-total">Logged total: <strong id="expense-log-total">{baseCurrency} 0</strong></p>
+      </div>
+    </section>
+  </main>
+</TripLayout>
+
+<script is:inline define:vars={{ storageKey, baseCurrency, budgetMeta, cityNames }}>
+  (function() {
+    let editingId = null;
+    function load() { try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { return []; } }
+    function save(d) { localStorage.setItem(storageKey, JSON.stringify(d)); }
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function populateCategories() {
+      const sel = document.getElementById('expense-category');
+      if (!sel) return;
+      sel.innerHTML = '';
+      budgetMeta.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c.id;
+        o.textContent = c.emoji + ' ' + c.title;
+        sel.appendChild(o);
+      });
+    }
+    function populateItems(catId) {
+      const sel = document.getElementById('expense-item');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">— Any —</option>';
+      const c = budgetMeta.find(x => x.id === catId);
+      if (!c) return;
+      c.items.forEach(i => {
+        const o = document.createElement('option');
+        o.value = i.id;
+        o.textContent = i.label;
+        sel.appendChild(o);
+      });
+    }
+
+    function render() {
+      const expenses = load().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      const list = document.getElementById('expense-list');
+      if (!list) return;
+      if (expenses.length === 0) {
+        list.innerHTML = '<p class="no-expenses">No expenses logged yet.</p>';
+      } else {
+        let html = '';
+        expenses.forEach(exp => {
+          html += '<div class="expense-entry' + (editingId === exp.id ? ' editing' : '') + '" data-expense-id="' + exp.id + '">';
+          html += '<div class="expense-info">';
+          html += '<span class="expense-desc">' + esc(exp.description) + '</span>';
+          html += '<span class="expense-meta">';
+          if (exp.city) html += esc(exp.city) + ' · ';
+          html += esc(exp.category);
+          if (exp.itemLabel) html += ' · ' + esc(exp.itemLabel);
+          if (exp.date) html += ' · ' + esc(exp.date);
+          html += '</span></div>';
+          html += '<div class="expense-right">';
+          html += '<span class="expense-amount">' + esc(exp.currency || baseCurrency) + ' ' + Number(exp.amount).toFixed(2) + '</span>';
+          html += '<button class="btn-edit" data-edit-id="' + exp.id + '" title="Edit">&#9998;</button>';
+          html += '<button class="btn-delete" data-del-id="' + exp.id + '" title="Remove">×</button>';
+          html += '</div></div>';
+        });
+        list.innerHTML = html;
+      }
+      let total = 0;
+      load().forEach(e => { if ((e.currency || baseCurrency) === baseCurrency) total += e.amount || 0; });
+      const t = document.getElementById('expense-log-total');
+      if (t) t.textContent = baseCurrency + ' ' + total.toFixed(2);
+
+      list.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', () => {
+        const id = b.getAttribute('data-del-id');
+        save(load().filter(x => x.id !== id));
+        if (editingId === id) cancelEdit();
+        render();
+      }));
+      list.querySelectorAll('.btn-edit').forEach(b => b.addEventListener('click', () => startEdit(b.getAttribute('data-edit-id'))));
+    }
+
+    function startEdit(id) {
+      const exp = load().find(e => e.id === id);
+      if (!exp) return;
+      editingId = id;
+      document.getElementById('expense-desc').value = exp.description;
+      document.getElementById('expense-amount').value = exp.amount;
+      document.getElementById('expense-currency').value = exp.currency || baseCurrency;
+      const catSel = document.getElementById('expense-category');
+      catSel.value = exp.category;
+      populateItems(exp.category);
+      const itemSel = document.getElementById('expense-item');
+      if (itemSel) itemSel.value = exp.itemId || '';
+      const citySel = document.getElementById('expense-city');
+      if (citySel) citySel.value = exp.city || '';
+      document.getElementById('expense-date').value = exp.date || '';
+      document.getElementById('btn-submit').textContent = 'Update Expense';
+      document.getElementById('btn-cancel').style.display = '';
+      render();
+    }
+    function cancelEdit() {
+      editingId = null;
+      const f = document.getElementById('expense-form');
+      if (f) f.reset();
+      const dateEl = document.getElementById('expense-date');
+      if (dateEl) dateEl.value = new Date().toISOString().slice(0, 10);
+      document.getElementById('btn-submit').textContent = 'Add Expense';
+      document.getElementById('btn-cancel').style.display = 'none';
+      render();
+    }
+
+    function init() {
+      populateCategories();
+      const catSel = document.getElementById('expense-category');
+      populateItems(catSel.value);
+      catSel.addEventListener('change', () => populateItems(catSel.value));
+
+      const dateEl = document.getElementById('expense-date');
+      if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+
+      document.getElementById('btn-cancel').addEventListener('click', cancelEdit);
+
+      document.getElementById('expense-form').addEventListener('submit', e => {
+        e.preventDefault();
+        const desc = document.getElementById('expense-desc').value.trim();
+        const amount = parseFloat(document.getElementById('expense-amount').value);
+        const category = document.getElementById('expense-category').value;
+        const itemSel = document.getElementById('expense-item');
+        const itemId = itemSel ? itemSel.value : '';
+        const itemLabel = itemSel && itemSel.selectedIndex > 0 ? itemSel.options[itemSel.selectedIndex].text : '';
+        const currency = document.getElementById('expense-currency').value;
+        const citySel = document.getElementById('expense-city');
+        const city = citySel ? citySel.value : '';
+        const date = document.getElementById('expense-date').value;
+        if (!desc || isNaN(amount) || amount <= 0) return;
+
+        const expenses = load();
+        if (editingId) {
+          const idx = expenses.findIndex(x => x.id === editingId);
+          if (idx >= 0) expenses[idx] = { ...expenses[idx], description: desc, amount, currency, category, itemId, itemLabel, city, date };
+          save(expenses);
+          cancelEdit();
+        } else {
+          expenses.push({
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+            description: desc, amount, currency, category, itemId, itemLabel, city, date,
+          });
+          save(expenses);
+          document.getElementById('expense-desc').value = '';
+          document.getElementById('expense-amount').value = '';
+        }
+        render();
+      });
+
+      render();
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  })();
+</script>
+
+<style>
+  .log-hero { padding: 3rem 2rem 2rem; text-align: center; border-bottom: 1px solid var(--cream-dark); }
+  .log-hero-inner { max-width: 600px; margin: 0 auto; }
+  .log-eyebrow { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; }
+  .log-title { font-family: var(--font-display); font-size: clamp(2.3rem, 7vw, 4rem); font-weight: 300; margin-bottom: 0.75rem; letter-spacing: -0.02em; }
+  .log-subtitle { font-size: 1rem; color: var(--ink-muted); line-height: 1.6; }
+
+  .section { padding: 2rem 2rem 3rem; }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  .expense-form { background: white; border: 1px solid var(--cream-dark); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; }
+  .form-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .form-row:last-of-type { margin-bottom: 1.25rem; }
+  .form-group { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 150px; }
+  .form-group-small { flex: 0 0 130px; }
+  .form-group label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+  .form-group input, .form-group select { padding: 0.5rem 0.6rem; border: 1px solid var(--cream-dark); border-radius: var(--radius); font-family: var(--font-body); font-size: 0.85rem; color: var(--ink); background: var(--cream); }
+  .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
+
+  .form-actions { display: flex; gap: 0.75rem; align-items: center; }
+  .btn-add { padding: 0.6rem 1.5rem; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.2s; }
+  .btn-add:hover { opacity: 0.88; }
+  .btn-cancel { padding: 0.6rem 1.5rem; background: none; color: var(--ink-muted); border: 1px solid var(--cream-dark); border-radius: var(--radius); font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; cursor: pointer; }
+  .btn-cancel:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  .log-details-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 500; color: var(--ink); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--cream-dark); }
+
+  :global(.expense-list) { margin-bottom: 1rem; }
+  :global(.no-expenses) { text-align: center; color: var(--ink-faint); font-size: 0.85rem; padding: 2rem; }
+  :global(.expense-entry) { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--cream-dark); background: white; border-radius: var(--radius); margin-bottom: 0.35rem; }
+  :global(.expense-entry.editing) { background: var(--green-light); border-left: 3px solid var(--pt-green); }
+  :global(.expense-info) { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; min-width: 0; }
+  :global(.expense-desc) { font-size: 0.88rem; color: var(--ink); }
+  :global(.expense-meta) { font-size: 0.75rem; color: var(--ink-faint); }
+  :global(.expense-right) { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+  :global(.expense-amount) { font-size: 0.9rem; font-weight: 500; color: var(--ink); }
+  :global(.btn-edit), :global(.btn-delete) { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: none; border: 1px solid var(--cream-dark); border-radius: var(--radius); color: var(--ink-faint); cursor: pointer; font-size: 0.85rem; }
+  :global(.btn-edit:hover) { color: var(--pt-green); border-color: var(--pt-green); }
+  :global(.btn-delete:hover) { color: var(--pt-red); border-color: var(--pt-red); }
+
+  .expense-total { text-align: right; font-size: 0.9rem; color: var(--ink-muted); padding-top: 0.5rem; border-top: 1px solid var(--cream-dark); }
+
+  @media (max-width: 600px) {
+    .log-hero { padding: 2.5rem 1.5rem 1.5rem; }
+    .section { padding: 1.5rem 1.25rem 2rem; }
+    .form-row { flex-direction: column; gap: 0.75rem; }
+    .form-group-small { flex: 1; }
+  }
+</style>
+
+<style>
+  header.log-hero { --accent: var(--accent, var(--pt-green)); }
+</style>

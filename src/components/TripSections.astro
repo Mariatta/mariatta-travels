@@ -1,0 +1,111 @@
+---
+import type { TripConfig, SectionId } from '../data/types';
+
+interface Props {
+  trip: TripConfig;
+  current: SectionId | 'home';
+}
+const { trip, current } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+const sectionLabel: Record<SectionId, string> = {
+  budget: 'Budget',
+  checklist: 'Checklist',
+  log: 'Log',
+  sync: 'Sync',
+  about: 'About',
+};
+
+type Link = { href: string; label: string; key: SectionId | 'home' };
+
+const links: Link[] = [
+  { href: `${base}${trip.id}/`, label: 'Overview', key: 'home' },
+  ...trip.sections.map<Link>(s => ({
+    href: `${base}${trip.id}/${s}/`,
+    label: sectionLabel[s],
+    key: s,
+  })),
+];
+---
+<nav class="trip-sections" aria-label={`${trip.title} sections`} style={`--accent: ${trip.accentColor}`}>
+  <div class="trip-sections-inner">
+    <span class="trip-sections-label">
+      <span class="trip-sections-emoji" aria-hidden="true">{trip.emoji}</span>
+      <span class="trip-sections-name">{trip.shortTitle}</span>
+    </span>
+    <ul class="trip-sections-links">
+      {links.map(l => (
+        <li>
+          <a href={l.href} class={current === l.key ? 'active' : ''}>{l.label}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</nav>
+
+<style>
+  .trip-sections {
+    position: sticky;
+    top: 60px;
+    z-index: 95;
+    background: white;
+    border-bottom: 1px solid var(--cream-dark);
+    padding: 0 2rem;
+  }
+  .trip-sections-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    min-height: 46px;
+    flex-wrap: wrap;
+  }
+  .trip-sections-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-right: 1.25rem;
+    border-right: 1px solid var(--cream-dark);
+    white-space: nowrap;
+  }
+  .trip-sections-emoji { font-size: 1rem; }
+  .trip-sections-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--ink);
+    letter-spacing: 0.01em;
+  }
+
+  .trip-sections-links {
+    display: flex;
+    gap: 0.1rem;
+    list-style: none;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+  }
+  .trip-sections-links a {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    padding: 0.4rem 0.8rem;
+    color: var(--ink-muted);
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .trip-sections-links a:hover { color: var(--ink); border-bottom-color: var(--cream-dark); }
+  .trip-sections-links a.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 500;
+  }
+
+  @media (max-width: 600px) {
+    .trip-sections { padding: 0 1rem; }
+    .trip-sections-inner { gap: 0.75rem; min-height: auto; padding: 0.4rem 0; }
+    .trip-sections-label { padding-right: 0.75rem; }
+    .trip-sections-links a { padding: 0.3rem 0.5rem; font-size: 0.72rem; }
+  }
+</style>
