@@ -211,7 +211,7 @@ const budgetMeta = trip.budget.map(c => ({
         const citySel = document.getElementById('expense-city');
         const city = citySel ? citySel.value : '';
         const date = document.getElementById('expense-date').value;
-        if (!desc || isNaN(amount) || amount <= 0) return;
+        if (!desc || isNaN(amount) || amount < 0) return;
 
         const expenses = load();
         if (editingId) {
