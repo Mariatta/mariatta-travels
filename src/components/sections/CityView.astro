@@ -12,6 +12,9 @@ interface Props {
   showHero?: boolean;
 }
 const { city, showHero = true } = Astro.props;
+
+let altIdx = 0;
+const nextAltClass = () => (altIdx++ % 2 === 0 ? 'section' : 'section section-alt');
 ---
 {showHero && (
   <header class="city-hero" style={`--city-accent: ${city.accentColor}`}>
@@ -24,7 +27,7 @@ const { city, showHero = true } = Astro.props;
   </header>
 )}
 
-<section class="section">
+<section class={nextAltClass()}>
   <div class="container">
     <div class="section-label">Overview</div>
     <h2 class="section-title">{city.name} at a glance</h2>
@@ -34,7 +37,7 @@ const { city, showHero = true } = Astro.props;
 </section>
 
 {city.venue && (
-  <section class="section section-alt" id="event-venue">
+  <section class={nextAltClass()} id="event-venue">
     <div class="container">
       <div class="section-label">Event Venue</div>
       <h2 class="section-title">{city.venue.eventName}</h2>
@@ -44,12 +47,8 @@ const { city, showHero = true } = Astro.props;
   </section>
 )}
 
-{city.iceCreamSpots && city.iceCreamSpots.length > 0 && (
-  <IceCreamSpots spots={city.iceCreamSpots} accentColor={city.accentColor} />
-)}
-
 {city.days.length > 0 && (
-  <section class="section section-alt">
+  <section class={nextAltClass()}>
     <div class="container">
       <div class="section-label">Day by Day</div>
       <h2 class="section-title">The itinerary</h2>
@@ -66,8 +65,12 @@ const { city, showHero = true } = Astro.props;
   </section>
 )}
 
+{city.iceCreamSpots && city.iceCreamSpots.length > 0 && (
+  <IceCreamSpots spots={city.iceCreamSpots} accentColor={city.accentColor} />
+)}
+
 {city.hotels.length > 0 && (
-  <section class="section">
+  <section class={nextAltClass()}>
     <div class="container">
       <div class="section-label">Where to Stay</div>
       <h2 class="section-title">Hotels in {city.name}</h2>
@@ -79,7 +82,7 @@ const { city, showHero = true } = Astro.props;
 )}
 
 {city.restaurants.length > 0 && (
-  <section class="section section-alt">
+  <section class={nextAltClass()}>
     <div class="container">
       <div class="section-label">Where to Eat</div>
       <h2 class="section-title">Restaurants in {city.name}</h2>
