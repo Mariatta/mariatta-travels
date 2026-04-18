@@ -34,20 +34,20 @@ const baseSym = currencySymbol(baseCurrency);
       <h1 class="budget-title">Travel Budget</h1>
       <p class="budget-subtitle">Plan your expenses and track actual spending during the trip.</p>
 
-      <div class="currency-controls">
-        <div class="currency-toggle">
-          <span class="currency-toggle-label">Display in</span>
-          <button type="button" class="currency-btn active" data-currency="CAD">CAD $</button>
-          <button type="button" class="currency-btn" data-currency={baseCurrency}>{baseCurrency} {baseSym.trim()}</button>
-        </div>
-        {baseCurrency !== 'CAD' && (
+      {baseCurrency !== 'CAD' && (
+        <div class="currency-controls">
+          <div class="currency-toggle">
+            <span class="currency-toggle-label">Display in</span>
+            <button type="button" class="currency-btn active" data-currency="CAD">CAD $</button>
+            <button type="button" class="currency-btn" data-currency={baseCurrency}>{baseCurrency} {baseSym.trim()}</button>
+          </div>
           <div class="exchange-rate-group">
             <label for="exchange-rate">1 {baseCurrency} =</label>
             <input type="number" id="exchange-rate" value={defaultRate} min="0.001" step="0.001" />
             <span>CAD</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <div class="budget-summary">
         <div class="summary-card">
