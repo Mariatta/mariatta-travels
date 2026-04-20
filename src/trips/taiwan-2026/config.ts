@@ -22,7 +22,7 @@ export const config: TripConfig = {
   description: 'A family travel guide to Taipei, Hualien, Taichung, Tainan & Kaohsiung',
   accentColor: '#C62828',
   baseCurrency: 'TWD',
-  sections: ['budget', 'checklist', 'log', 'sync'],
+  sections: ['budget', 'checklist', 'log'],
   cities: [taipeiData, hualienData, taichungData, tainanData, kaohsiungData],
   budget: budgetData,
   checklist: checklistData,

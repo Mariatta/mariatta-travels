@@ -24,6 +24,21 @@ import Footer from '../components/Footer.astro';
         <div class="changelog">
           <div class="changelog-entry">
             <div class="changelog-header">
+              <h2 class="changelog-version">v2.1</h2>
+              <span class="changelog-date">April 2026</span>
+              <span class="changelog-tag tag-new">Refinement</span>
+            </div>
+
+            <ol class="prompt-list">
+              <li>
+                <span class="prompt-label">One global Sync page instead of one per trip</span>
+                <p>A question about whether each trip's <code>/sync/</code> page exported one trip or everything led to the realization that a whole-app export is the better primary flow — one file, one import when setting up a new device. The per-trip sync pages were removed; a single <code>/sync/</code> page now lives in the top nav with a trip-picker (defaults to all trips) and a new v2 export format keyed by trip id. The importer still accepts the old per-trip v1 format for backwards compatibility, and Replace only touches trips present in the file so other trips stay untouched. Per-trip expense counts render next to each checkbox so it's obvious which trips actually have data.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-header">
               <h2 class="changelog-version">v2.0</h2>
               <span class="changelog-date">April 2026</span>
               <span class="changelog-tag tag-major">Major release</span>

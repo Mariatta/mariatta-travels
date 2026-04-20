@@ -1,6 +1,6 @@
 ---
 interface Props {
-  current?: 'home' | 'about';
+  current?: 'home' | 'about' | 'sync';
 }
 const { current } = Astro.props;
 const base = import.meta.env.BASE_URL;
@@ -10,6 +10,7 @@ const base = import.meta.env.BASE_URL;
     <a class="nav-brand" href={base}>✈️ Mariatta Travels</a>
     <ul class="nav-links">
       <li><a href={base} class={current === 'home' ? 'active' : ''}>All trips</a></li>
+      <li><a href={`${base}sync/`} class={current === 'sync' ? 'active' : ''}>Sync</a></li>
       <li><a href={`${base}about/`} class={current === 'about' ? 'active' : ''}>About</a></li>
     </ul>
   </div>

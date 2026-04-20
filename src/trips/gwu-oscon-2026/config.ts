@@ -17,7 +17,7 @@ export const config: TripConfig = {
   description: 'GWU OSCON 2026 in Washington DC — delivered the closing keynote reflecting on 10 years in Open Source.',
   accentColor: '#033C5A',
   baseCurrency: 'USD',
-  sections: ['budget', 'checklist', 'log', 'sync'],
+  sections: ['budget', 'checklist', 'log'],
   cities: [washingtonDc],
   budget: budgetData,
   checklist: checklistData,

@@ -17,7 +17,7 @@ export const config: TripConfig = {
   description: 'PyCascades 2026 — a day trip to downtown Vancouver to give the No More Spreadsheets! talk on PyLadiesCon infrastructure.',
   accentColor: '#0E7C66',
   baseCurrency: 'CAD',
-  sections: ['budget', 'checklist', 'log', 'sync'],
+  sections: ['budget', 'checklist', 'log'],
   cities: [vancouver],
   budget: budgetData,
   checklist: checklistData,

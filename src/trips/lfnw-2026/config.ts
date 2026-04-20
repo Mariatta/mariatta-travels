@@ -18,7 +18,7 @@ export const config: TripConfig = {
   description: 'Conference trip for LinuxFest Northwest 2026 in Bellingham, WA',
   accentColor: '#3C3B6E',
   baseCurrency: 'USD',
-  sections: ['budget', 'checklist', 'log', 'sync'],
+  sections: ['budget', 'checklist', 'log'],
   cities: [bellingham],
   budget: budgetData,
   checklist: checklistData,

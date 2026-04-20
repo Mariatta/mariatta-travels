@@ -1,0 +1,396 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { trips } from '../data/trips';
+
+const tripMeta = trips.map(t => ({
+  id: t.id,
+  title: t.title,
+  shortTitle: t.shortTitle,
+  emoji: t.emoji,
+  datesLabel: t.datesLabel,
+  accentColor: t.accentColor,
+}));
+---
+<Layout title="Sync" description="Export or import your trip data across devices">
+  <Nav current="sync" />
+
+  <header class="sync-hero">
+    <div class="sync-hero-inner">
+      <p class="sync-eyebrow">Data Sync</p>
+      <h1 class="sync-page-title">Export &amp; Import</h1>
+      <p class="sync-subtitle">Move your expenses and checklist data across devices. Pick the trips you want to export, or import data into whichever trips it covers.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <div class="sync-card">
+          <div class="sync-card-header">
+            <h2 class="sync-title">Export</h2>
+            <div class="sync-picker-toggles">
+              <button type="button" class="btn-mini" id="btn-all">Select all</button>
+              <button type="button" class="btn-mini" id="btn-none">Select none</button>
+            </div>
+          </div>
+          <p class="sync-desc">Choose which trips to include (defaults to all).</p>
+          <ul class="trip-picker" id="trip-picker">
+            {tripMeta.map(t => (
+              <li class="trip-picker-row" style={`--accent: ${t.accentColor}`}>
+                <label>
+                  <input type="checkbox" class="trip-check" data-trip-id={t.id} checked />
+                  <span class="trip-picker-emoji" aria-hidden="true">{t.emoji}</span>
+                  <span class="trip-picker-name">{t.shortTitle}</span>
+                  <span class="trip-picker-dates">{t.datesLabel}</span>
+                  <span class="trip-picker-count" data-count-for={t.id}></span>
+                </label>
+              </li>
+            ))}
+          </ul>
+          <div class="sync-actions">
+            <button type="button" class="btn-primary" id="btn-export">Export Selected</button>
+            <button type="button" class="btn-outline" id="btn-copy">Copy to Clipboard</button>
+          </div>
+          <p class="sync-status" id="export-status"></p>
+        </div>
+
+        <div class="sync-card">
+          <h2 class="sync-title">Import</h2>
+          <p class="sync-desc">
+            Accepts the whole-app export (v2) as well as legacy per-trip exports (v1).
+            <strong>Replace</strong> only overwrites the trips present in the file — other trips stay untouched.
+          </p>
+          <div class="sync-import-options">
+            <label class="sync-file-label" for="import-file">
+              <span class="btn-primary btn-file">Choose File</span>
+              <input type="file" id="import-file" accept=".json" />
+            </label>
+            <span class="sync-or">or paste below</span>
+          </div>
+          <textarea id="import-text" class="sync-textarea" rows="6" placeholder="Paste exported JSON here..."></textarea>
+          <div class="sync-actions">
+            <button type="button" class="btn-primary" id="btn-import-merge">Merge with Existing</button>
+            <button type="button" class="btn-secondary" id="btn-import-replace">Replace (for trips in file)</button>
+          </div>
+          <p class="sync-status" id="import-status"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer footerText="✈️ Mariatta Travels" repoUrl="https://github.com/Mariatta/mariatta-travels" />
+</Layout>
+
+<script is:inline define:vars={{ tripIds: tripMeta.map(t => t.id) }}>
+(function() {
+  function budgetKey(id) { return 'travels-budget-' + id; }
+  function checklistKey(id) { return 'travels-checklist-' + id; }
+  function loadBudget(id) { try { return JSON.parse(localStorage.getItem(budgetKey(id)) || '[]'); } catch { return []; } }
+  function loadChecklist(id) { try { return JSON.parse(localStorage.getItem(checklistKey(id)) || '{}'); } catch { return {}; } }
+  function saveBudget(id, d) { localStorage.setItem(budgetKey(id), JSON.stringify(d)); }
+  function saveChecklist(id, d) { localStorage.setItem(checklistKey(id), JSON.stringify(d)); }
+
+  function showStatus(el, msg, isError) {
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'sync-status ' + (isError ? 'sync-error' : 'sync-success');
+    setTimeout(function() { el.textContent = ''; el.className = 'sync-status'; }, 5000);
+  }
+
+  var exportStatus = document.getElementById('export-status');
+  var importStatus = document.getElementById('import-status');
+
+  // Show expense counts next to each trip
+  tripIds.forEach(function(id) {
+    var count = loadBudget(id).length;
+    var checkedItems = Object.keys(loadChecklist(id)).filter(function(k) { return !!loadChecklist(id)[k]; }).length;
+    var el = document.querySelector('[data-count-for="' + id + '"]');
+    if (!el) return;
+    var parts = [];
+    if (count > 0) parts.push(count + ' expense' + (count === 1 ? '' : 's'));
+    if (checkedItems > 0) parts.push(checkedItems + ' checked');
+    el.textContent = parts.length > 0 ? '(' + parts.join(' · ') + ')' : '(empty)';
+    if (parts.length === 0) el.classList.add('trip-picker-count-empty');
+  });
+
+  function getSelectedTripIds() {
+    return Array.prototype.slice.call(document.querySelectorAll('.trip-check:checked'))
+      .map(function(cb) { return cb.getAttribute('data-trip-id'); });
+  }
+
+  function getExportData() {
+    var selected = getSelectedTripIds();
+    var trips = {};
+    selected.forEach(function(id) {
+      trips[id] = { expenses: loadBudget(id), checklist: loadChecklist(id) };
+    });
+    return JSON.stringify({
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      trips: trips,
+    }, null, 2);
+  }
+
+  document.getElementById('btn-all').addEventListener('click', function() {
+    document.querySelectorAll('.trip-check').forEach(function(cb) { cb.checked = true; });
+  });
+  document.getElementById('btn-none').addEventListener('click', function() {
+    document.querySelectorAll('.trip-check').forEach(function(cb) { cb.checked = false; });
+  });
+
+  document.getElementById('btn-export').addEventListener('click', function() {
+    var selected = getSelectedTripIds();
+    if (selected.length === 0) { showStatus(exportStatus, 'Select at least one trip to export', true); return; }
+    var data = getExportData();
+    var blob = new Blob([data], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    var stem = selected.length === 1 ? selected[0] + '-data' : 'mariatta-travels-data';
+    a.download = stem + '-' + new Date().toISOString().split('T')[0] + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showStatus(exportStatus, 'Exported ' + selected.length + ' trip' + (selected.length === 1 ? '' : 's'));
+  });
+
+  document.getElementById('btn-copy').addEventListener('click', function() {
+    var selected = getSelectedTripIds();
+    if (selected.length === 0) { showStatus(exportStatus, 'Select at least one trip to export', true); return; }
+    var data = getExportData();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(data).then(
+        function() { showStatus(exportStatus, 'Copied ' + selected.length + ' trip' + (selected.length === 1 ? '' : 's') + ' to clipboard'); },
+        function() { showStatus(exportStatus, 'Failed to copy — try Export instead', true); }
+      );
+    } else {
+      showStatus(exportStatus, 'Clipboard not available — try Export instead', true);
+    }
+  });
+
+  // Normalize imported payload into { tripId -> { expenses, checklist } }
+  function normalizeImport(parsed) {
+    if (!parsed || typeof parsed !== 'object') return null;
+    // v2 whole-app
+    if (parsed.version === 2 && parsed.trips && typeof parsed.trips === 'object') {
+      var out = {};
+      Object.keys(parsed.trips).forEach(function(id) {
+        var t = parsed.trips[id] || {};
+        out[id] = {
+          expenses: Array.isArray(t.expenses) ? t.expenses : [],
+          checklist: (t.checklist && typeof t.checklist === 'object') ? t.checklist : {},
+        };
+      });
+      return out;
+    }
+    // v1 per-trip
+    if (parsed.version === 1 && parsed.tripId) {
+      var out1 = {};
+      out1[parsed.tripId] = {
+        expenses: Array.isArray(parsed.expenses) ? parsed.expenses : [],
+        checklist: (parsed.checklist && typeof parsed.checklist === 'object') ? parsed.checklist : {},
+      };
+      return out1;
+    }
+    // Bare array (very old or hand-edited single-trip expenses) — cannot route without tripId
+    return null;
+  }
+
+  function validateExpenses(expenses, label) {
+    for (var i = 0; i < expenses.length; i++) {
+      var e = expenses[i];
+      if (!e || !e.description || typeof e.amount !== 'number') {
+        return 'Invalid expense at ' + label + ' entry ' + (i + 1) + ' — missing description or amount';
+      }
+    }
+    return null;
+  }
+
+  function importData(jsonStr, mode) {
+    var parsed;
+    try { parsed = JSON.parse(jsonStr); }
+    catch { showStatus(importStatus, 'Invalid JSON — could not parse the file', true); return; }
+
+    var byTrip = normalizeImport(parsed);
+    if (!byTrip) {
+      showStatus(importStatus, 'Unrecognized format — expected v1 per-trip or v2 whole-app export', true);
+      return;
+    }
+
+    // Validate all expenses before touching localStorage
+    var tripIdList = Object.keys(byTrip);
+    for (var i = 0; i < tripIdList.length; i++) {
+      var id = tripIdList[i];
+      var err = validateExpenses(byTrip[id].expenses, id);
+      if (err) { showStatus(importStatus, err, true); return; }
+    }
+
+    var unknownTrips = tripIdList.filter(function(id) { return tripIds.indexOf(id) === -1; });
+
+    var totalAdded = 0;
+    var totalReplaced = 0;
+    tripIdList.forEach(function(id) {
+      var incoming = byTrip[id];
+      if (mode === 'replace') {
+        saveBudget(id, incoming.expenses);
+        saveChecklist(id, incoming.checklist);
+        totalReplaced++;
+      } else {
+        var existing = loadBudget(id);
+        var seen = {};
+        existing.forEach(function(e) { seen[e.id] = true; });
+        incoming.expenses.forEach(function(e) {
+          if (!seen[e.id]) { existing.push(e); totalAdded++; }
+        });
+        saveBudget(id, existing);
+        var cur = loadChecklist(id);
+        Object.keys(incoming.checklist).forEach(function(k) {
+          if (incoming.checklist[k]) cur[k] = true;
+        });
+        saveChecklist(id, cur);
+      }
+    });
+
+    var msg;
+    if (mode === 'replace') {
+      msg = 'Replaced data for ' + totalReplaced + ' trip' + (totalReplaced === 1 ? '' : 's');
+    } else {
+      msg = 'Merged · ' + totalAdded + ' new expense' + (totalAdded === 1 ? '' : 's') + ' across ' + tripIdList.length + ' trip' + (tripIdList.length === 1 ? '' : 's');
+    }
+    if (unknownTrips.length > 0) {
+      msg += ' · Warning: ' + unknownTrips.length + ' unknown trip id' + (unknownTrips.length === 1 ? '' : 's') + ' (' + unknownTrips.join(', ') + ') saved to localStorage but not currently registered';
+    }
+    showStatus(importStatus, msg);
+    document.getElementById('import-text').value = '';
+  }
+
+  document.getElementById('btn-import-merge').addEventListener('click', function() {
+    var text = document.getElementById('import-text').value.trim();
+    if (!text) { showStatus(importStatus, 'No data to import — paste JSON or choose a file', true); return; }
+    importData(text, 'merge');
+  });
+
+  document.getElementById('btn-import-replace').addEventListener('click', function() {
+    var text = document.getElementById('import-text').value.trim();
+    if (!text) { showStatus(importStatus, 'No data to import — paste JSON or choose a file', true); return; }
+    if (!confirm('This will replace all expenses and checklist state for the trips included in the file. Continue?')) return;
+    importData(text, 'replace');
+  });
+
+  document.getElementById('import-file').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      document.getElementById('import-text').value = ev.target.result;
+      showStatus(importStatus, 'File loaded — click Merge or Replace to import');
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+})();
+</script>
+
+<style>
+  .sync-hero { padding: 3.5rem 2rem 2rem; text-align: center; border-bottom: 1px solid var(--cream-dark); }
+  .sync-hero-inner { max-width: 640px; margin: 0 auto; }
+  .sync-eyebrow { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--pt-green); margin-bottom: 0.75rem; }
+  .sync-page-title { font-family: var(--font-display); font-size: clamp(2.3rem, 7vw, 4rem); font-weight: 300; margin-bottom: 0.75rem; letter-spacing: -0.02em; }
+  .sync-subtitle { font-size: 1rem; color: var(--ink-muted); line-height: 1.6; }
+
+  .section { padding: 2.5rem 2rem 3rem; }
+  .container { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .sync-card { background: white; border: 1px solid var(--cream-dark); border-radius: var(--radius-lg); padding: 1.75rem; }
+  .sync-card-header { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.25rem; }
+  .sync-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; color: var(--ink); }
+  .sync-desc { font-size: 0.88rem; color: var(--ink-muted); margin-bottom: 1.1rem; line-height: 1.55; }
+
+  .sync-picker-toggles { display: flex; gap: 0.4rem; }
+  .btn-mini {
+    padding: 0.3rem 0.75rem; background: var(--cream);
+    color: var(--ink-muted); border: 1px solid var(--cream-dark); border-radius: var(--radius);
+    font-family: var(--font-body); font-size: 0.72rem; letter-spacing: 0.05em;
+    cursor: pointer; transition: color 0.15s, background 0.15s, border-color 0.15s;
+  }
+  .btn-mini:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  .trip-picker { list-style: none; padding: 0; margin: 0 0 1.25rem; }
+  .trip-picker-row {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--cream);
+    border-left: 3px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 4%, transparent);
+    margin-bottom: 0.3rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .trip-picker-row:last-child { border-bottom: none; }
+  .trip-picker-row label {
+    display: flex; align-items: center; gap: 0.7rem; cursor: pointer;
+    flex-wrap: wrap;
+  }
+  .trip-check { margin: 0; width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+  .trip-picker-emoji { font-size: 1.1rem; }
+  .trip-picker-name { font-family: var(--font-display); font-size: 1.05rem; color: var(--ink); }
+  .trip-picker-dates { font-size: 0.76rem; color: var(--ink-muted); letter-spacing: 0.02em; }
+  .trip-picker-count { font-size: 0.72rem; color: var(--ink-muted); margin-left: auto; font-feature-settings: "lnum"; }
+  .trip-picker-count-empty { color: var(--ink-faint); font-style: italic; }
+
+  .sync-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+  .btn-primary {
+    display: inline-flex; align-items: center;
+    padding: 0.6rem 1.5rem;
+    background: var(--pt-green);
+    color: white; border: none; border-radius: var(--radius);
+    font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; letter-spacing: 0.05em;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-outline {
+    padding: 0.6rem 1.5rem;
+    background: none; color: var(--pt-green);
+    border: 1px solid var(--pt-green);
+    border-radius: var(--radius);
+    font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; letter-spacing: 0.05em;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-outline:hover { background: color-mix(in srgb, var(--pt-green) 10%, transparent); }
+  .btn-secondary {
+    padding: 0.6rem 1.5rem;
+    background: none; color: var(--ink-muted);
+    border: 1px solid var(--cream-dark); border-radius: var(--radius);
+    font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; letter-spacing: 0.05em;
+    cursor: pointer; transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-secondary:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  .sync-import-options { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .sync-file-label { cursor: pointer; position: relative; }
+  .sync-file-label input[type="file"] { position: absolute; width: 0; height: 0; opacity: 0; overflow: hidden; }
+  .btn-file { display: inline-block; cursor: pointer; }
+  .sync-or { font-size: 0.8rem; color: var(--ink-faint); }
+
+  .sync-textarea {
+    width: 100%; padding: 0.6rem;
+    border: 1px solid var(--cream-dark); border-radius: var(--radius);
+    font-family: ui-monospace, monospace; font-size: 0.78rem; color: var(--ink);
+    background: var(--cream); resize: vertical;
+    margin-bottom: 1rem; line-height: 1.5;
+  }
+  .sync-textarea:focus { outline: none; border-color: var(--pt-green); }
+
+  .sync-status { font-size: 0.82rem; margin-top: 0.75rem; min-height: 1.2em; line-height: 1.4; }
+  .sync-success { color: var(--pt-green); }
+  .sync-error { color: var(--pt-red); }
+
+  @media (max-width: 700px) {
+    .sync-hero { padding: 2.5rem 1.5rem 1.5rem; }
+    .section { padding: 1.5rem 1.25rem 2rem; }
+    .sync-card { padding: 1.25rem; }
+    .trip-picker-count { width: 100%; margin-left: 0; padding-left: 2rem; }
+  }
+</style>

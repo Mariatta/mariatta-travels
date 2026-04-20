@@ -8,7 +8,6 @@ export type SectionId =
   | 'budget'
   | 'checklist'
   | 'log'
-  | 'sync'
   | 'about';
 
 export interface Hotel {

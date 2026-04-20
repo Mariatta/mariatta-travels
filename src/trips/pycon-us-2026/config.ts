@@ -18,7 +18,7 @@ export const config: TripConfig = {
   description: 'Conference trip for PyCon US 2026 in Long Beach, California. Mariatta is speaking on Saturday.',
   accentColor: '#3776AB',
   baseCurrency: 'USD',
-  sections: ['budget', 'checklist', 'log', 'sync'],
+  sections: ['budget', 'checklist', 'log'],
   cities: [longBeach],
   budget: budgetData,
   checklist: checklistData,

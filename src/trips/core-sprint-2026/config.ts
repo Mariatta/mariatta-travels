@@ -18,7 +18,7 @@ export const config: TripConfig = {
   description: 'Python Core Dev Sprint 2026 at OpenAI in San Francisco',
   accentColor: '#002868',
   baseCurrency: 'USD',
-  sections: ['budget', 'checklist', 'log', 'sync'],
+  sections: ['budget', 'checklist', 'log'],
   cities: [sanFrancisco],
   budget: budgetData,
   checklist: checklistData,

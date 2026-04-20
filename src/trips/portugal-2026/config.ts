@@ -20,7 +20,7 @@ export const config: TripConfig = {
   description: 'A family travel guide to Porto, Lisbon & Aveiro — August 2026',
   accentColor: '#006B3F',
   baseCurrency: 'EUR',
-  sections: ['budget', 'checklist', 'log', 'sync'],
+  sections: ['budget', 'checklist', 'log'],
   cities: [porto, lisbon, aveiro],
   budget: budgetData,
   checklist: checklistData,
