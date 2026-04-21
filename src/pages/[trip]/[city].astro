@@ -1,7 +1,7 @@
 ---
 import TripLayout from '../../layouts/TripLayout.astro';
 import CityView from '../../components/sections/CityView.astro';
-import { trips } from '../../data/trips';
+import { trips, getEffectiveStatus } from '../../data/trips';
 
 export function getStaticPaths() {
   const paths = [];
@@ -18,7 +18,8 @@ export function getStaticPaths() {
 }
 
 const { trip, city } = Astro.props;
+const effectiveStatus = getEffectiveStatus(trip);
 ---
 <TripLayout trip={trip} section="home" pageTitle={`${city.name} — ${trip.shortTitle}`} pageLabel={city.name} currentCity={city}>
-  <CityView city={city} />
+  <CityView city={city} effectiveStatus={effectiveStatus} />
 </TripLayout>

@@ -6,13 +6,14 @@ import CityView from '../../components/sections/CityView.astro';
 import TripStats from '../../components/sections/TripStats.astro';
 import TripTips from '../../components/sections/TripTips.astro';
 import EventCallout from '../../components/sections/EventCallout.astro';
-import { trips } from '../../data/trips';
+import { trips, getEffectiveStatus } from '../../data/trips';
 
 export function getStaticPaths() {
   return trips.map(t => ({ params: { trip: t.id }, props: { trip: t } }));
 }
 
 const { trip } = Astro.props;
+const effectiveStatus = getEffectiveStatus(trip);
 ---
 <TripLayout trip={trip} section="home" pageTitle={trip.title}>
   <TripHero trip={trip} />
@@ -27,7 +28,7 @@ const { trip } = Astro.props;
   )}
 
   {(trip.type === 'conference' || trip.cities.length === 1) && trip.cities[0] && (
-    <CityView city={trip.cities[0]} showHero={false} />
+    <CityView city={trip.cities[0]} showHero={false} effectiveStatus={effectiveStatus} />
   )}
 
   {trip.tips && trip.tips.length > 0 && (

@@ -34,6 +34,14 @@ import Footer from '../components/Footer.astro';
                 <span class="prompt-label">One global Sync page instead of one per trip</span>
                 <p>A question about whether each trip's <code>/sync/</code> page exported one trip or everything led to the realization that a whole-app export is the better primary flow — one file, one import when setting up a new device. The per-trip sync pages were removed; a single <code>/sync/</code> page now lives in the top nav with a trip-picker (defaults to all trips) and a new v2 export format keyed by trip id. The importer still accepts the old per-trip v1 format for backwards compatibility, and Replace only touches trips present in the file so other trips stay untouched. Per-trip expense counts render next to each checkbox so it's obvious which trips actually have data.</p>
               </li>
+              <li>
+                <span class="prompt-label">During-trip categories first in the expense log</span>
+                <p>The Log page's category dropdown defaulted to Transport at the top, but transport and accommodation are mostly one-time pre-trip spends — the expenses actually logged during a trip are food, activities, shopping, and misc. The dropdown now sorts <code>during-trip</code> categories before <code>pre-trip</code> ones (stable within each group), so the common case is the first option instead of a buried one.</p>
+              </li>
+              <li>
+                <span class="prompt-label">Public site shows only room-block hotels; personal picks stay private</span>
+                <p>For conference trips, Mariatta wants to help promote the event's official room block — but the personal hotel and restaurant shortlist shouldn't be broadcast to the internet. Hotels and restaurants now take an optional <code>inEventBlock</code> flag. On the public build (<code>PUBLIC_BUILD=true</code>, set by the GitHub Pages deploy), only places tagged <code>inEventBlock</code> render — in the list <em>and</em> on the map. Local dev still shows everything, so the full planning view stays intact for the author. Once a trip is completed or cancelled, hotels and restaurants disappear entirely — the event is over, no need to keep advertising. LFNW 2026 and PyCon US 2026 were backfilled with the official blocks tagged.</p>
+              </li>
             </ol>
           </div>
 

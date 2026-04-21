@@ -20,6 +20,13 @@ export interface Hotel {
   description: string;
   tip: string;
   website?: string;
+  /**
+   * True for hotels that are part of the event's official room block.
+   * Block hotels stay public (to help promote the event). Untagged
+   * (personal-pick) hotels are hidden from public builds but still
+   * visible in local planning.
+   */
+  inEventBlock?: boolean;
 }
 
 export interface Restaurant {
@@ -32,6 +39,12 @@ export interface Restaurant {
   mustTry: string;
   hours?: string;
   bookAhead?: boolean;
+  /**
+   * True for restaurants that are part of the event's official food
+   * listing / sponsor guide. Same semantics as Hotel.inEventBlock —
+   * untagged entries are personal picks and stay private on public builds.
+   */
+  inEventBlock?: boolean;
 }
 
 export interface Activity {

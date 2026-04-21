@@ -172,6 +172,7 @@ export const longBeach: CityData = {
       description: 'The official PyCon host hotel, directly connected to the Long Beach Convention Center via the Rainbow Lagoon walkway. Spacious rooms with bay or city views, outdoor pool, and on-site dining. Zero-commute to the venue — step out of your room and onto the conference floor. Book inside the PyCon room block for the conference rate.',
       tip: 'Best for: Speakers who want zero-minute commute on talk day',
       website: 'https://www.hyatt.com/en-US/hotel/california/hyatt-regency-long-beach/lgbrl',
+      inEventBlock: true,
     },
     {
       name: 'Marriott Long Beach Downtown',
@@ -183,6 +184,7 @@ export const longBeach: CityData = {
       description: 'Full-service Marriott in downtown Long Beach, part of the PyCon US 2026 room block. Short walk to the convention centre, close to Pine Avenue dining and the waterfront. Reliable Bonvoy option with a pool, on-site dining, and comfortable rooms. Book inside the PyCon block for the conference rate.',
       tip: 'Best for: Bonvoy loyalists who want a walkable downtown stay inside the PyCon block',
       website: 'https://www.marriott.com/',
+      inEventBlock: true,
     },
     {
       name: 'The Westin Long Beach',
@@ -194,6 +196,7 @@ export const longBeach: CityData = {
       description: 'Reliable Westin right next to the convention centre — a classic conference pick. Heavenly Bed, heated pool, and a lobby Starbucks. Standard rooms are comfortable if not flashy; the location does the heavy lifting. Frequently in the PyCon room block.',
       tip: 'Best for: Bonvoy loyalists who want the convention rate',
       website: 'https://www.marriott.com/hotels/travel/lgbwi-the-westin-long-beach/',
+      inEventBlock: true,
     },
     {
       name: 'Courtyard by Marriott Long Beach Downtown',
@@ -205,6 +208,7 @@ export const longBeach: CityData = {
       description: 'Solid mid-range Marriott option 3 minutes on foot from the convention centre. Home to James Republic restaurant for breakfast and dinner. Clean rooms, smaller footprint than the Hyatt/Westin but a noticeably better price point. Great value for a solo traveller.',
       tip: 'Best for: Solo budget-conscious traveller who still wants to be steps from the venue',
       website: 'https://www.marriott.com/hotels/travel/lgbdt-courtyard-long-beach-downtown/',
+      inEventBlock: true,
     },
   ],
 

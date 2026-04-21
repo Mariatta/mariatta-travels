@@ -12,12 +12,14 @@ const { trip } = Astro.props;
 const storageKey = `travels-budget-${trip.id}`;
 const baseCurrency = trip.baseCurrency;
 const cityNames = trip.cities.map(c => c.name);
-const budgetMeta = trip.budget.map(c => ({
-  id: c.id,
-  title: c.title,
-  emoji: c.emoji,
-  items: c.items.map(i => ({ id: i.id, label: i.label })),
-}));
+const budgetMeta = [...trip.budget]
+  .sort((a, b) => (a.type === 'during-trip' ? 0 : 1) - (b.type === 'during-trip' ? 0 : 1))
+  .map(c => ({
+    id: c.id,
+    title: c.title,
+    emoji: c.emoji,
+    items: c.items.map(i => ({ id: i.id, label: i.label })),
+  }));
 ---
 <TripLayout trip={trip} section="log" pageTitle={`${trip.shortTitle} · Log Expense`} pageLabel="Log">
   <header class="log-hero" style={`--accent: ${trip.accentColor}`}>

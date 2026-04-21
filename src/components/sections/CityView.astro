@@ -5,13 +5,43 @@ import DayCard from '../DayCard.astro';
 import MapSection from '../MapSection.astro';
 import VenueBlock from './VenueBlock.astro';
 import IceCreamSpots from './IceCreamSpots.astro';
-import type { CityData } from '../../data/types';
+import type { CityData, EffectiveTripStatus } from '../../data/types';
 
 interface Props {
   city: CityData;
   showHero?: boolean;
+  effectiveStatus?: EffectiveTripStatus;
 }
-const { city, showHero = true } = Astro.props;
+const { city, showHero = true, effectiveStatus = 'planning' } = Astro.props;
+
+// Visibility rules for hotels and restaurants:
+//   1. Once the trip is completed or cancelled, hide everything — the event is
+//      over; no point advertising anymore.
+//   2. During planning/confirmed on a public build (PUBLIC_BUILD=true), only
+//      show places tagged inEventBlock (official conference block / listing).
+//      Personal picks stay private.
+//   3. During planning/confirmed on a local build, show everything (personal
+//      planning view — full shortlist visible to the author).
+const isPublicBuild = import.meta.env.PUBLIC_BUILD === 'true';
+const tripActive = effectiveStatus === 'planning' || effectiveStatus === 'confirmed';
+
+const visibleHotels = tripActive
+  ? (isPublicBuild ? city.hotels.filter(h => h.inEventBlock) : city.hotels)
+  : [];
+const visibleRestaurants = tripActive
+  ? (isPublicBuild ? city.restaurants.filter(r => r.inEventBlock) : city.restaurants)
+  : [];
+
+const visibleHotelNames = new Set(visibleHotels.map(h => h.name));
+const visibleRestaurantNames = new Set(visibleRestaurants.map(r => r.name));
+const mapPointsForRender = city.mapPoints.filter(p => {
+  if (p.type === 'hotel') return visibleHotelNames.has(p.name);
+  if (p.type === 'restaurant') return visibleRestaurantNames.has(p.name);
+  return true; // attractions, ice-cream stay
+});
+
+const showHotels = visibleHotels.length > 0;
+const showRestaurants = visibleRestaurants.length > 0;
 
 let altIdx = 0;
 const nextAltClass = () => (altIdx++ % 2 === 0 ? 'section' : 'section section-alt');
@@ -32,7 +62,7 @@ const nextAltClass = () => (altIdx++ % 2 === 0 ? 'section' : 'section section-al
     <div class="section-label">Overview</div>
     <h2 class="section-title">{city.name} at a glance</h2>
     <p class="section-intro">Attractions, hotels and restaurants — all on one map.</p>
-    <MapSection mapCenter={city.mapCenter} mapZoom={city.mapZoom} mapPoints={city.mapPoints} accentColor={city.accentColor} />
+    <MapSection mapCenter={city.mapCenter} mapZoom={city.mapZoom} mapPoints={mapPointsForRender} accentColor={city.accentColor} />
   </div>
 </section>
 
@@ -69,25 +99,25 @@ const nextAltClass = () => (altIdx++ % 2 === 0 ? 'section' : 'section section-al
   <IceCreamSpots spots={city.iceCreamSpots} accentColor={city.accentColor} />
 )}
 
-{city.hotels.length > 0 && (
+{showHotels && (
   <section class={nextAltClass()}>
     <div class="container">
       <div class="section-label">Where to Stay</div>
       <h2 class="section-title">Hotels in {city.name}</h2>
       <div class="cards-grid">
-        {city.hotels.map(h => <HotelCard hotel={h} />)}
+        {visibleHotels.map(h => <HotelCard hotel={h} />)}
       </div>
     </div>
   </section>
 )}
 
-{city.restaurants.length > 0 && (
+{showRestaurants && (
   <section class={nextAltClass()}>
     <div class="container">
       <div class="section-label">Where to Eat</div>
       <h2 class="section-title">Restaurants in {city.name}</h2>
       <div class="cards-grid">
-        {city.restaurants.map(r => <RestaurantCard restaurant={r} />)}
+        {visibleRestaurants.map(r => <RestaurantCard restaurant={r} />)}
       </div>
     </div>
   </section>

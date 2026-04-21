@@ -119,6 +119,7 @@ export const bellingham: CityData = {
       description: 'Full-service Four Points on Lakeway Dr with an on-site restaurant, indoor pool, and conference facilities. Part of the LFNW 2026 room block — book inside the block for the conference rate. About 10 minutes to BTC. Bonvoy loyalty stay. Family room or 2 doubles available.',
       tip: 'Best for: Bonvoy loyalists who want a reliable mid-range block rate',
       website: 'https://www.marriott.com/en-us/hotels/blifp-four-points-bellingham/',
+      inEventBlock: true,
     },
     {
       name: 'Hampton by Hilton Bellingham Airport',
@@ -130,6 +131,7 @@ export const bellingham: CityData = {
       description: 'Dependable Hampton near the airport and I-5 with clean rooms, complimentary hot breakfast, and an indoor pool. Part of the LFNW 2026 room block. Hilton Honors points stay. About 10 min drive to BTC and downtown. Family room or 2 doubles available.',
       tip: 'Best for: Hilton loyalists who want no-surprises comfort at the block rate',
       website: 'https://www.hilton.com/en/hotels/bliwa-hampton-bellingham-airport/',
+      inEventBlock: true,
     },
     {
       name: 'Home2 Suites by Hilton Bellingham',
@@ -141,6 +143,7 @@ export const bellingham: CityData = {
       description: 'Modern all-suite hotel with in-room kitchenettes — great for families who want to prepare some meals. Free breakfast, indoor pool, and laundry facilities. Part of the LFNW 2026 room block. Near the airport with easy freeway access. Family room or 2 doubles available.',
       tip: 'Best for: Families wanting suite-style rooms with a kitchen to save on dining',
       website: 'https://www.hilton.com/en/hotels/blihsht-home2-suites-bellingham/',
+      inEventBlock: true,
     },
     {
       name: 'Holiday Inn & Suites Bellingham',
@@ -152,6 +155,7 @@ export const bellingham: CityData = {
       description: 'Full-service Holiday Inn & Suites near the Bellingham airport with indoor pool, on-site dining, and spacious family suites. Part of the LFNW 2026 room block. IHG One Rewards points stay. About 10–15 min drive to BTC. Family suites available.',
       tip: 'Best for: IHG loyalists or families who want a roomy suite at the block rate',
       website: 'https://www.ihg.com/holidayinn/hotels/us/en/bellingham/blivw/hoteldetail',
+      inEventBlock: true,
     },
   ],
 
