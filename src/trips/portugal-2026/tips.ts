@@ -1,7 +1,7 @@
 import type { TipCategory, TripStat } from '../../data/types';
 
 export const stats: TripStat[] = [
-  { num: '14', label: 'Nights' },
+  { num: '13', label: 'Nights' },
   { num: '3', label: 'Cities' },
   { num: '~14h', label: 'YVR → OPO' },
   { num: 'Aug', label: 'Peak summer' },

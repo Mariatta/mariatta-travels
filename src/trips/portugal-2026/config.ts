@@ -13,7 +13,7 @@ export const config: TripConfig = {
   emoji: '🇵🇹',
   type: 'family',
   status: 'planning',
-  startDate: '2026-08-22',
+  startDate: '2026-08-23',
   endDate: '2026-09-05',
   datesLabel: 'August – September 2026',
   tagline: 'Porto, Lisbon & Aveiro — a family journey',
