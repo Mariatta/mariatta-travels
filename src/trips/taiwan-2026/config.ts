@@ -14,7 +14,7 @@ export const config: TripConfig = {
   shortTitle: 'Taiwan',
   emoji: '🇹🇼',
   type: 'family',
-  status: 'planning',
+  status: 'cancelled',
   startDate: '2026-08-22',
   endDate: '2026-09-10',
   datesLabel: 'August – September 2026',
