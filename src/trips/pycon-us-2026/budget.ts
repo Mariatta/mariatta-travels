@@ -72,7 +72,7 @@ export const budgetData: BudgetCategory[] = [
     items: [
       { id: 'act-aquarium', label: 'Aquarium of the Pacific ticket', estimated: 45, currency: 'USD', note: 'Book online for best price' },
       { id: 'act-queen-mary', label: 'Queen Mary tour (optional)', estimated: 30, currency: 'USD' },
-      { id: 'act-ice-cream', label: 'Ice cream selfie tour 🍦', estimated: 40, currency: 'USD', note: 'Long Beach Creamery, Handel\'s, Romeo, Afters — the tradition!' },
+      { id: 'act-ice-cream', label: 'Ice cream selfie tour 🍦', estimated: 40, currency: 'USD', note: 'Long Beach Creamery, Handel\'s, Afters — the tradition!' },
     ],
   },
   {

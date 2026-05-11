@@ -37,7 +37,7 @@ export const checklistData: ChecklistCategory[] = [
       { id: 'pycon-schedule', label: 'Review PyCon schedule and mark sessions to attend', url: 'https://us.pycon.org/2026/schedule/' },
       { id: 'pycon-sprints', label: 'Review sprint options for Mon–Tue (May 18–19)', url: 'https://us.pycon.org/2026/events/sprints/' },
       { id: 'pycon-social', label: 'Check for PyLadies auction, PyCon dinner, opening reception' },
-      { id: 'pycon-ice-cream', label: 'Scout ice cream selfie spot near venue 🍦', note: 'Long Beach Creamery, Handel\'s, Romeo Chocolates, or Afters' },
+      { id: 'pycon-ice-cream', label: 'Scout ice cream selfie spot near venue 🍦', note: 'Long Beach Creamery, Handel\'s, or Afters' },
     ],
   },
   {
