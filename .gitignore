@@ -7,3 +7,7 @@ dist/
 .DS_Store
 .idea/
 .claude/settings.local.json
+
+# Private expense exports — raw financial data, never committed to this public repo
+expense-data/*
+!expense-data/README.md
