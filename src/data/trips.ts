@@ -6,6 +6,7 @@ import { config as coreSprint2026 } from '../trips/core-sprint-2026/config';
 import { config as pyconUs2026 } from '../trips/pycon-us-2026/config';
 import { config as pycascades2026 } from '../trips/pycascades-2026/config';
 import { config as gwuOscon2026 } from '../trips/gwu-oscon-2026/config';
+import { config as seaglPybeach2026 } from '../trips/seagl-pybeach-2026/config';
 
 export const trips: TripConfig[] = [
   lfnw2026,
@@ -15,6 +16,7 @@ export const trips: TripConfig[] = [
   pyconUs2026,
   pycascades2026,
   gwuOscon2026,
+  seaglPybeach2026,
 ].sort((a, b) => a.startDate.localeCompare(b.startDate));
 
 const todayIso = new Date().toISOString().slice(0, 10);
