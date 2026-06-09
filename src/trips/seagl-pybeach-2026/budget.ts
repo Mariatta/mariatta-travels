@@ -7,9 +7,9 @@ export const budgetData: BudgetCategory[] = [
     emoji: '✈️',
     type: 'pre-trip',
     items: [
-      { id: 'flights-yvr-sea', label: 'YVR → SEA (Thu Oct 22)', estimated: 150, currency: 'CAD', note: 'Short ~1h hop — or drive / Amtrak Cascades instead' },
-      { id: 'flights-sea-lax', label: 'SEA → LAX (Fri Oct 23, evening)', estimated: 140, currency: 'USD', note: '~2h45m after SeaGL' },
-      { id: 'flights-lax-yvr', label: 'LAX → YVR (Sun Oct 25)', estimated: 280, currency: 'CAD', note: 'Direct ~2h50m home' },
+      { id: 'flights-yvr-sea', label: 'YVR → SEA (Thu Oct 22)', estimated: 180, currency: 'CAD', note: 'Short ~1h hop — or drive / Amtrak Cascades instead' },
+      { id: 'flights-sea-lax', label: 'SEA → LAX (Fri Oct 23, evening)', estimated: 200, currency: 'USD', note: '~2h45m after SeaGL' },
+      { id: 'flights-lax-yvr', label: 'LAX → YVR (Sun Oct 25)', estimated: 320, currency: 'CAD', note: 'Direct ~2h50m home — one-ways run higher than round-trips' },
     ],
   },
   {
@@ -39,9 +39,9 @@ export const budgetData: BudgetCategory[] = [
     emoji: '🍽️',
     type: 'during-trip',
     items: [
-      { id: 'food-sea', label: 'Seattle meals (Thu dinner + Fri brunch/lunch)', estimated: 70, currency: 'USD', note: 'Ramen, Portage Bay brunch, birria tacos' },
+      { id: 'food-sea', label: 'Seattle meals (Thu dinner + Fri brunch/lunch)', estimated: 70, currency: 'USD', note: 'Ramen, Portage Bay brunch, birria tacos — SeaGL does not provide meals' },
       { id: 'food-sm-dinner', label: 'Santa Monica dinners (2 evenings)', estimated: 75, currency: 'USD', note: '~$35/evening solo — Cassia, tacos' },
-      { id: 'food-sm-lunch', label: 'Santa Monica lunches & PyBeach day', estimated: 45, currency: 'USD', note: 'Ramen, Tacos Por Favor' },
+      { id: 'food-sm-lunch', label: 'Santa Monica lunches & PyBeach day', estimated: 45, currency: 'USD', note: 'Ramen, Tacos Por Favor — PyBeach does not provide lunch (unlike PyCon)' },
       { id: 'food-coffee', label: 'Coffee & snacks (both cities)', estimated: 40, currency: 'USD', note: 'Pre-talk caffeine' },
     ],
   },
