@@ -12,7 +12,7 @@ export const config: TripConfig = {
   shortTitle: 'Portugal',
   emoji: '🇵🇹',
   type: 'family',
-  status: 'planning',
+  status: 'confirmed',
   startDate: '2026-08-23',
   endDate: '2026-09-05',
   datesLabel: 'August – September 2026',
