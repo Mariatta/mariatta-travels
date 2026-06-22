@@ -18,11 +18,11 @@ export const aveiro: CityData = {
     neighbourhood: 'University campus',
     dates: 'Sep 3 – 4, 2026 (Thu – Fri)',
     hours: 'Typically 9:00 AM – 6:00 PM daily — confirm final schedule with organisers',
-    website: 'https://pycon.pt',
+    website: 'https://2026.pycon.pt',
     mapUrl: 'https://www.google.com/maps/search/?api=1&query=DETI+Universidade+de+Aveiro',
     nearestTransit: 'Aveiro train station (~15 min walk to old town, then ~15 min walk to DETI) · Bolt is ~5 min from town · flat enough to cycle',
     accessNotes: 'Bring government-issued photo ID for badge pickup. Registration desk typically opens before first session — arrive 30 minutes early on day one.',
-    contact: 'Conference info at <a href="https://pycon.pt" target="_blank" rel="noopener">pycon.pt</a> · follow <a href="https://fosstodon.org/@pyconpt" target="_blank" rel="noopener">@pyconpt</a> for updates',
+    contact: 'Conference info at <a href="https://2026.pycon.pt" target="_blank" rel="noopener">2026.pycon.pt</a> · follow <a href="https://fosstodon.org/@pyconpt" target="_blank" rel="noopener">@pyconpt</a> for updates',
     lat: 40.6305,
     lng: -8.6570,
   },
@@ -79,6 +79,7 @@ export const aveiro: CityData = {
     { name: 'Mercado do Peixe', type: 'restaurant', lat: 40.6418, lng: -8.6555 },
     { name: 'Tasquinha do Lagar', type: 'restaurant', lat: 40.6395, lng: -8.6492 },
     { name: 'Maré Cheia', type: 'restaurant', lat: 40.6410, lng: -8.6500 },
+    { name: 'A Nossa Casa', type: 'restaurant', lat: 40.6362, lng: -8.6475 },
     { name: 'Han Table Barbecue', type: 'restaurant', lat: 40.6400, lng: -8.6510 },
     { name: "António's Spot", type: 'restaurant', lat: 40.6395, lng: -8.6505 },
   ],
@@ -106,7 +107,7 @@ export const aveiro: CityData = {
     {
       dayNum: 12, date: 'Sep 3 (Thu)', title: 'PyCon Day 1 + 20th Anniversary 💛',
       activities: [
-        { description: 'PyCon Portugal Day 1 at DETI, Universidade de Aveiro (~15-min walk south of old town, or quick Bolt)', url: 'https://pycon.pt/' },
+        { description: 'PyCon Portugal Day 1 at DETI, Universidade de Aveiro (~15-min walk south of old town, or quick Bolt) — Mariatta\'s talk is accepted; check the schedule for the exact slot', url: 'https://2026.pycon.pt/talks/schedule/' },
         { description: 'Family day trip option: Coimbra (~30 min train each way, €5 pp) — Joanina Library, Sé Velha, lunch in the old town. Perfect for teenagers.', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Joanina+Library+Coimbra+Portugal' },
         { description: 'Ice cream selfie: Gelados de Portugal — try the ovos moles flavour by the canal, perfect PyCon selfie backdrop', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Gelados+de+Portugal+Aveiro' },
         { description: '5:30 PM — pre-dinner sunset at Costa Nova (15-min Bolt). Walk along the striped houses, watch the Atlantic light go gold.' },
@@ -118,7 +119,7 @@ export const aveiro: CityData = {
     {
       dayNum: 13, date: 'Sep 4 (Fri)', title: 'PyCon Day 2 + more beach',
       activities: [
-        { description: 'PyCon Portugal Day 2 at DETI', url: 'https://pycon.pt/' },
+        { description: 'PyCon Portugal Day 2 at DETI', url: 'https://2026.pycon.pt/talks/schedule/' },
         { description: 'Family beach option A: São Jacinto Dunes nature reserve — ferry across the lagoon + walk through wild dune beaches, the quietest beach near Aveiro', mapUrl: 'https://www.google.com/maps/search/?api=1&query=S%C3%A3o+Jacinto+Dunes+Aveiro+Portugal' },
         { description: 'Family beach option B: longer day at Costa Nova / Praia da Barra if everyone loved it', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Praia+da+Barra+Portugal' },
         { description: 'Non-beach option: Salinas de Aveiro working salt pans — kids can do a guided tour and learn how flor de sal is harvested', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Salinas+de+Aveiro+Portugal' },
@@ -236,6 +237,16 @@ export const aveiro: CityData = {
       description: 'Outstanding fresh seafood — stuffed crab (sapateira), mixed seafood platters, clams, and grilled sole. The mixed platter for two is actually enough for 3–4. A classic Aveiro seafood experience. Closed Mondays. Arrive early or book ahead.',
       mustTry: 'Stuffed crab (sapateira) and the seafood rice',
       hours: 'Tue–Sun lunch & dinner. Closed Mon.',
+    },
+    {
+      name: 'A Nossa Casa',
+      rating: 4.1,
+      ratingCount: '900',
+      price: '€€',
+      tags: ['Local favourite', 'Fresh seafood', 'Generous portions'],
+      description: 'A no-frills neighbourhood tasca that locals pack out for honest, generously portioned Portuguese seafood. Clams, garlic prawns, seafood rice, eel stew, and simply grilled fresh fish — excellent value for the quality. Not fancy, and it can get a long wait at peak times, so arrive early or be ready to queue.',
+      mustTry: 'Arroz de marisco (seafood rice), clams, and the grilled fresh fish of the day',
+      hours: 'Lunch & dinner — popular with locals, expect a wait at peak times',
     },
     {
       name: 'Han Table Barbecue',
