@@ -33,12 +33,16 @@ export function getTrip(id: string): TripConfig | undefined {
   return trips.find(t => t.id === id);
 }
 
+// Cancelled trips are shelved — they didn't happen, so the prev/next chain
+// skips them. Completed trips stay in the chain (they're in the Archive).
+const navigableTrips = trips.filter(t => getEffectiveStatus(t) !== 'cancelled');
+
 export function getTripNeighbours(id: string): { prev: TripConfig | null; next: TripConfig | null } {
-  const i = trips.findIndex(t => t.id === id);
+  const i = navigableTrips.findIndex(t => t.id === id);
   if (i === -1) return { prev: null, next: null };
   return {
-    prev: i > 0 ? trips[i - 1] : null,
-    next: i < trips.length - 1 ? trips[i + 1] : null,
+    prev: i > 0 ? navigableTrips[i - 1] : null,
+    next: i < navigableTrips.length - 1 ? navigableTrips[i + 1] : null,
   };
 }
 
