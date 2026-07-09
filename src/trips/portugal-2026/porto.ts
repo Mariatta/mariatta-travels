@@ -73,7 +73,7 @@ export const porto: CityData = {
       dayNum: 3, date: 'Aug 25 (Tue)', title: 'Douro Valley day trip ⭐',
       activities: [
         { description: 'Train + boat option: São Bento → Régua (~2 hr scenic), boat upriver to Pinhão, train back. ~€60 pp.', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Pinh%C3%A3o+Douro+Valley+Portugal' },
-        { description: 'OR private guided tour with driver: pickup at hotel, 2 quintas, lunch with a view. ~€150 pp but zero logistics — worth it for a family of 5.' },
+        { description: 'OR private guided tour with driver: pickup at hotel, 2 quintas, lunch with a view. ~€150 pp but zero logistics — worth it for a family of 4.' },
         { description: 'Quinta do Bomfim in Pinhão — excellent for tastings and a riverside stop', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Quinta+do+Bomfim+Pinh%C3%A3o+Portugal' },
       ],
     },

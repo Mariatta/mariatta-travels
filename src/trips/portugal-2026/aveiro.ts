@@ -3,8 +3,8 @@ import type { CityData } from '../../data/types';
 export const aveiro: CityData = {
   name: 'Aveiro',
   slug: 'aveiro',
-  dates: 'Sep 1 – 5, 2026',
-  nights: 4,
+  dates: 'Sep 2 – 5, 2026',
+  nights: 3,
   tagline: 'Painted canals, moliceiro boats & ovos moles',
   accentColor: '#B5560A',
   transport: 'Sep 5 — 8:30 AM private van pickup → Porto Airport by 9:45 AM → 12 PM flight back to Vancouver.',
@@ -86,22 +86,13 @@ export const aveiro: CityData = {
 
   days: [
     {
-      dayNum: 10, date: 'Sep 1 (Tue)', title: 'Train to Aveiro & canals',
+      dayNum: 11, date: 'Sep 2 (Wed)', title: 'Train to Aveiro & canals',
       activities: [
         { description: 'Alfa Pendular Lisbon → Aveiro (~2 hrs 20 min), arrive mid-morning. Drop bags, grab lunch.' },
         { description: 'Moliceiro boat ride on the canals — €13 adult, €6 kids, 45 min — Aveiro\'s "Little Venice" claim', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Moliceiro+boat+tour+Aveiro+Portugal' },
         { description: 'Wander the old town, buy ovos moles — the local egg-yolk-and-rice-paper sweet, shaped like little white shells' },
-        { description: 'Dinner at Mercado do Peixe for fresh seafood', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Mercado+do+Peixe+Aveiro+Portugal' },
-      ],
-    },
-    {
-      dayNum: 11, date: 'Sep 2 (Wed)', title: 'Costa Nova beach day ⭐',
-      activities: [
-        { description: 'Bus or Bolt to Costa Nova (15 min) — famous candy-striped fishermen\'s houses lining the beach', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Costa+Nova+Aveiro+Portugal' },
-        { description: 'Morning beach time on the long Atlantic strand — manageable break, lifeguarded, full facilities. Atlantic is bracing but the kids will go in.' },
-        { description: 'Lunch on grilled sardines or fresh fish at one of the beachfront tascas' },
-        { description: 'Walk south along the boardwalk to Praia da Barra and the Farol de Aveiro — Portugal\'s tallest lighthouse (62m), open Wednesday afternoons for the climb', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Farol+de+Aveiro+Praia+da+Barra+Portugal' },
-        { description: 'Late afternoon back to Aveiro for dinner. Get to bed early — conference starts tomorrow.' },
+        { description: 'Optional late-afternoon escape to Costa Nova (15-min bus or Bolt) for the candy-striped houses and a first look at the Atlantic strand', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Costa+Nova+Aveiro+Portugal' },
+        { description: 'Dinner at Mercado do Peixe for fresh seafood. Early night — conference starts tomorrow.', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Mercado+do+Peixe+Aveiro+Portugal' },
       ],
     },
     {
