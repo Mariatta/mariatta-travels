@@ -1,0 +1,27 @@
+---
+// Shared client-side money helpers for pages that read logged expenses.
+// Render this component before any inline script that uses window.TravelsMoney.
+// Keep the rate/symbol semantics in sync with src/data/currency.ts.
+---
+<script is:inline>
+  window.TravelsMoney = {
+    loadExpenses: function(storageKey) {
+      try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch (e) { return []; }
+    },
+    // User-set exchange rate (CAD per 1 unit of base currency), else the default.
+    loadRate: function(rateKey, defaultRate) {
+      var v = parseFloat(localStorage.getItem(rateKey));
+      return v > 0 ? v : defaultRate;
+    },
+    // Convert between a trip's base currency and CAD; rate = CAD per 1 base unit.
+    convert: function(amount, fromCurrency, toCurrency, rate) {
+      if (fromCurrency === toCurrency) return amount;
+      if (toCurrency === 'CAD') return amount * rate;
+      if (fromCurrency === 'CAD') return amount / rate;
+      return amount;
+    },
+    symbol: function(c) {
+      return c === 'EUR' ? '€' : c === 'USD' || c === 'CAD' ? '$' : c === 'TWD' ? 'NT$' : c + ' ';
+    },
+  };
+</script>

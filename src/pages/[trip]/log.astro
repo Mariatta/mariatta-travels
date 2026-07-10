@@ -1,6 +1,8 @@
 ---
 import TripLayout from '../../layouts/TripLayout.astro';
+import MoneyScript from '../../components/MoneyScript.astro';
 import { trips } from '../../data/trips';
+import { defaultRateFor } from '../../data/currency';
 
 export function getStaticPaths() {
   return trips
@@ -10,7 +12,9 @@ export function getStaticPaths() {
 
 const { trip } = Astro.props;
 const storageKey = `travels-budget-${trip.id}`;
+const rateKey = `travels-rate-${trip.id}`;
 const baseCurrency = trip.baseCurrency;
+const defaultRate = defaultRateFor(baseCurrency);
 const cityNames = trip.cities.map(c => c.name);
 const budgetMeta = [...trip.budget]
   .sort((a, b) => (a.type === 'during-trip' ? 0 : 1) - (b.type === 'during-trip' ? 0 : 1))
@@ -82,16 +86,17 @@ const budgetMeta = [...trip.budget]
 
         <h3 class="log-details-title">Expenses</h3>
         <div id="expense-list" class="expense-list"></div>
-        <p class="expense-total">Logged total: <strong id="expense-log-total">{baseCurrency} 0</strong></p>
+        <p class="expense-total">Logged total: <strong id="expense-log-total">{baseCurrency} 0</strong> <span id="expense-log-note" class="expense-log-note"></span></p>
       </div>
     </section>
   </main>
 </TripLayout>
 
-<script is:inline define:vars={{ storageKey, baseCurrency, budgetMeta, cityNames }}>
+<MoneyScript />
+<script is:inline define:vars={{ storageKey, rateKey, baseCurrency, defaultRate, budgetMeta, cityNames }}>
   (function() {
     let editingId = null;
-    function load() { try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { return []; } }
+    function load() { return TravelsMoney.loadExpenses(storageKey); }
     function save(d) { localStorage.setItem(storageKey, JSON.stringify(d)); }
     function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
@@ -146,10 +151,17 @@ const budgetMeta = [...trip.budget]
         });
         list.innerHTML = html;
       }
-      let total = 0;
-      load().forEach(e => { if ((e.currency || baseCurrency) === baseCurrency) total += e.amount || 0; });
+      const rate = TravelsMoney.loadRate(rateKey, defaultRate);
+      let total = 0, hasConverted = false;
+      expenses.forEach(e => {
+        const cur = e.currency || baseCurrency;
+        if (cur !== baseCurrency) hasConverted = true;
+        total += TravelsMoney.convert(e.amount || 0, cur, baseCurrency, rate);
+      });
       const t = document.getElementById('expense-log-total');
       if (t) t.textContent = baseCurrency + ' ' + total.toFixed(2);
+      const note = document.getElementById('expense-log-note');
+      if (note) note.textContent = hasConverted ? 'CAD entries converted at 1 ' + baseCurrency + ' = ' + rate + ' CAD' : '';
 
       list.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', () => {
         const id = b.getAttribute('data-del-id');
@@ -282,6 +294,7 @@ const budgetMeta = [...trip.budget]
   :global(.btn-delete:hover) { color: var(--pt-red); border-color: var(--pt-red); }
 
   .expense-total { text-align: right; font-size: 0.9rem; color: var(--ink-muted); padding-top: 0.5rem; border-top: 1px solid var(--cream-dark); }
+  .expense-log-note { display: block; font-size: 0.72rem; color: var(--ink-faint); }
 
   @media (max-width: 600px) {
     .log-hero { padding: 2.5rem 1.5rem 1.5rem; }

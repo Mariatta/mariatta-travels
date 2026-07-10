@@ -1,6 +1,8 @@
 ---
 import TripLayout from '../../layouts/TripLayout.astro';
+import MoneyScript from '../../components/MoneyScript.astro';
 import { trips } from '../../data/trips';
+import { defaultRateFor, currencySymbol } from '../../data/currency';
 
 export function getStaticPaths() {
   return trips
@@ -17,14 +19,7 @@ const displayKey = `travels-display-${trip.id}`;
 const baseCurrency = trip.baseCurrency;
 const cityNames = trip.cities.map(c => c.name);
 
-const currencyRates: Record<string, number> = {
-  EUR: 1.53, USD: 1.37, TWD: 0.045, CAD: 1,
-};
-const defaultRate = currencyRates[baseCurrency] ?? 1;
-
-const currencySymbol = (c: string) =>
-  c === 'EUR' ? '€' : c === 'USD' ? '$' : c === 'TWD' ? 'NT$' : c === 'CAD' ? '$' : c + ' ';
-
+const defaultRate = defaultRateFor(baseCurrency);
 const baseSym = currencySymbol(baseCurrency);
 ---
 <TripLayout trip={trip} section="budget" pageTitle={`${trip.shortTitle} · Budget`} pageLabel="Budget">
@@ -198,29 +193,16 @@ const baseSym = currencySymbol(baseCurrency);
 </TripLayout>
 
 <script is:inline src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<MoneyScript />
 <script is:inline define:vars={{ storageKey, rateKey, displayKey, baseCurrency, defaultRate, cityNames, budgetMeta: trip.budget.map(c => ({ id: c.id, title: c.title, items: c.items.map(i => ({ id: i.id, currency: i.currency, estimated: i.estimated })) })) }}>
 (function() {
   var displayCurrency = localStorage.getItem(displayKey) || 'CAD';
-  var exchangeRate = parseFloat(localStorage.getItem(rateKey)) || defaultRate;
+  var exchangeRate = TravelsMoney.loadRate(rateKey, defaultRate);
   var chartInstances = {};
 
-  function loadExpenses() { try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { return []; } }
-
-  // Convert amount from its native currency to display currency
-  function toDisplay(amount, fromCurrency) {
-    if (fromCurrency === displayCurrency) return amount;
-    if (displayCurrency === 'CAD') return amount * exchangeRate; // base -> CAD
-    if (fromCurrency === 'CAD') return amount / exchangeRate; // CAD -> base
-    return amount; // shouldn't happen
-  }
-
-  function sym() {
-    if (displayCurrency === 'CAD') return '$';
-    if (displayCurrency === 'EUR') return '€';
-    if (displayCurrency === 'USD') return '$';
-    if (displayCurrency === 'TWD') return 'NT$';
-    return displayCurrency + ' ';
-  }
+  function loadExpenses() { return TravelsMoney.loadExpenses(storageKey); }
+  function toDisplay(amount, fromCurrency) { return TravelsMoney.convert(amount, fromCurrency, displayCurrency, exchangeRate); }
+  function sym() { return TravelsMoney.symbol(displayCurrency); }
 
   function fmtAmount(amount, fromCurrency) { return sym() + toDisplay(amount, fromCurrency).toFixed(2); }
   function fmtRound(amount, fromCurrency) { return sym() + Math.round(toDisplay(amount, fromCurrency)).toLocaleString(); }
