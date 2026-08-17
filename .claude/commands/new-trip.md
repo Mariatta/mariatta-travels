@@ -58,6 +58,7 @@ import { cityOne } from './city-one'; // import each city data file
 import { budgetData } from './budget';
 import { checklistData } from './checklist';
 import { stats, tips } from './tips';
+import { phrases } from './phrases'; // only when the local language isn't English
 
 export const config: TripConfig = {
   id: '<slug>',
@@ -73,12 +74,15 @@ export const config: TripConfig = {
   description: 'Longer description used as meta description',
   accentColor: '#006B3F',
   baseCurrency: 'EUR',
-  sections: ['budget', 'checklist', 'log', 'sync'], // always include these
+  sections: ['budget', 'checklist', 'log'], // always include these
+  // add 'phrases' to sections, and the `phrases` field below, only for
+  // destinations where the local language isn't English
   cities: [cityOne /*, cityTwo, ... */],
   budget: budgetData,
   checklist: checklistData,
   stats,
   tips,
+  phrases,
 };
 ```
 
@@ -106,6 +110,19 @@ Export `checklistData: ChecklistCategory[]` with categories covering flights & t
 Export:
 - `stats: TripStat[]` — 4 items for the hero stats strip: nights, cities, flight time (`~Xh YVR → XXX`), season (e.g. "Peak summer").
 - `tips: TipCategory[]` — 4 categories: **Money & Payments**, **Weather & Packing**, **Getting Around**, **Practical Tips**. 4–6 tips each with `icon` (emoji), `title`, `body`. Cover currency, cards/cash, tipping, weather, packing, flights, transit, rideshare, power adapters, language, safety.
+
+### `phrases.ts` — only when the local language isn't English
+
+Skip this file entirely for English-speaking destinations (US, Canada, UK, Australia). Otherwise export `phrases: PhraseBook`, add `'phrases'` to `sections`, and pass `phrases` in the config.
+
+- `language` (as travellers know it, e.g. "European Portuguese" — not just "Portuguese" when the regional variety differs), `nativeName`, `speechLang` (BCP-47 tag used for browser text-to-speech: `pt-PT`, `zh-TW`, `ja-JP`).
+- `intro`, `englishNote` — how far English gets you at this destination, and where it doesn't.
+- `pronunciationKey: PronunciationRule[]` — 8–10 rules for the sounds an English speaker gets wrong, each with an example word.
+- `categories: PhraseCategory[]` — always cover: hello & goodbye · please/thank you/sorry · where is…? what is…? · eating out · shopping & prices · numbers (`layout: 'grid'`) · with the kids (family trips) · if something goes wrong (include the local emergency number in the category `intro`).
+
+Per phrase: `en`, `native` (local script), `pronunciation` (respelling for an English speaker, CAPITALS on the stressed syllable — never IPA), plus optional `romanized` (required when the script isn't Latin), `literal`, `note`, and `speak` (what text-to-speech should read when `native` contains a placeholder like "……").
+
+Write the regional variety actually spoken there — Portugal's *comboio* and *casa de banho*, not Brazil's *trem* and *banheiro* — and note gendered forms where they matter (obrigado/obrigada). Include the destination's own money habits in the prices category: how prices are written and how they're said out loud.
 
 ## Register the trip
 

@@ -1,0 +1,317 @@
+---
+import TripLayout from '../../layouts/TripLayout.astro';
+import { trips } from '../../data/trips';
+
+export function getStaticPaths() {
+  return trips
+    .filter(t => t.sections.includes('phrases') && t.phrases)
+    .map(t => ({ params: { trip: t.id }, props: { trip: t } }));
+}
+
+const { trip } = Astro.props;
+const book = trip.phrases!;
+const totalPhrases = book.categories.reduce((sum, c) => sum + c.phrases.length, 0);
+const speechLang = book.speechLang;
+// The <html lang> is English; native text carries its own lang so screen
+// readers and the browser's own pronunciation switch with it.
+const nativeLang = speechLang;
+---
+<TripLayout trip={trip} section="phrases" pageTitle={`${trip.shortTitle} · Phrases`} pageLabel="Phrases">
+  <header class="phrases-hero">
+    <div class="phrases-hero-inner">
+      <p class="phrases-eyebrow">Say a little</p>
+      <h1 class="phrases-title">{book.language}</h1>
+      <p class="phrases-native" lang={nativeLang}>{book.nativeName}</p>
+      {book.intro && <p class="phrases-subtitle">{book.intro}</p>}
+      <div class="phrases-meta">
+        <span>{totalPhrases} phrases</span>
+        <span class="dot" aria-hidden="true">·</span>
+        <span>{book.categories.length} categories</span>
+        <span class="dot" aria-hidden="true">·</span>
+        <span class="audio-status" id="audio-status">tap 🔊 to hear it</span>
+      </div>
+      <div class="phrases-search">
+        <label class="sr-only" for="phrase-filter">Filter phrases</label>
+        <input
+          type="search"
+          id="phrase-filter"
+          placeholder="Filter — try “where”, “thank”, or “price”"
+          autocomplete="off"
+        />
+        <p class="filter-empty" id="filter-empty" hidden>No phrase matches that.</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    {book.englishNote && (
+      <section class="section">
+        <div class="container">
+          <div class="english-note">
+            <span class="english-note-icon" aria-hidden="true">💬</span>
+            <p>{book.englishNote}</p>
+          </div>
+        </div>
+      </section>
+    )}
+
+    {book.pronunciationKey && book.pronunciationKey.length > 0 && (
+      <section class="section section-alt" id="pronunciation-key">
+        <div class="container">
+          <div class="category-header">
+            <span class="category-emoji" aria-hidden="true">🔉</span>
+            <h2 class="category-title">How the letters sound</h2>
+          </div>
+          <p class="category-intro">
+            Read the respellings out loud. <strong>CAPITALS</strong> mark the stressed syllable.
+          </p>
+          <div class="key-grid">
+            {book.pronunciationKey.map(rule => (
+              <div class="key-card">
+                <span class="key-sound" lang={nativeLang}>{rule.sound}</span>
+                <p class="key-as">{rule.as}</p>
+                {rule.example && <p class="key-example">{rule.example}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    {book.categories.map((cat, i) => (
+      <section class={`section ${i % 2 === 0 ? '' : 'section-alt'}`} data-category>
+        <div class="container">
+          <div class="category-header">
+            <span class="category-emoji" aria-hidden="true">{cat.emoji}</span>
+            <h2 class="category-title">{cat.title}</h2>
+            <span class="category-count">{cat.phrases.length}</span>
+          </div>
+          {cat.intro && <p class="category-intro">{cat.intro}</p>}
+
+          <div class={cat.layout === 'grid' ? 'phrase-grid' : 'phrase-list'}>
+            {cat.phrases.map(p => {
+              const spoken = p.speak ?? p.native;
+              const search = [p.en, p.native, p.romanized, p.pronunciation, p.literal, p.note]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
+              return (
+                <div class="phrase" data-search={search}>
+                  <div class="phrase-body">
+                    <p class="phrase-en">{p.en}</p>
+                    <p class="phrase-native" lang={nativeLang}>{p.native}</p>
+                    {p.romanized && <p class="phrase-romanized">{p.romanized}</p>}
+                    <p class="phrase-say">
+                      <span class="say-label" aria-hidden="true">say</span>
+                      <span class="say-text">{p.pronunciation}</span>
+                    </p>
+                    {p.literal && <p class="phrase-literal">literally: {p.literal}</p>}
+                    {p.note && <p class="phrase-note">{p.note}</p>}
+                  </div>
+                  <button
+                    type="button"
+                    class="speak-btn"
+                    data-speak={spoken}
+                    aria-label={`Hear “${p.native}” spoken`}
+                  >
+                    <span aria-hidden="true">🔊</span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    ))}
+  </main>
+</TripLayout>
+
+<script is:inline define:vars={{ speechLang }}>
+  (function () {
+    const synth = window.speechSynthesis;
+
+    // --- Speak buttons -----------------------------------------------------
+    const buttons = Array.from(document.querySelectorAll('.speak-btn'));
+    const status = document.getElementById('audio-status');
+
+    if (!synth) {
+      buttons.forEach(b => { b.hidden = true; });
+      if (status) status.textContent = 'this browser cannot read phrases aloud';
+    } else {
+      let voice = null;
+      const base = speechLang.split('-')[0];
+
+      function pickVoice() {
+        const voices = synth.getVoices();
+        if (!voices.length) return;
+        voice =
+          voices.find(v => v.lang.replace('_', '-') === speechLang) ||
+          voices.find(v => v.lang.replace('_', '-').startsWith(base + '-')) ||
+          voices.find(v => v.lang.replace('_', '-') === base) ||
+          null;
+        if (!voice && status) {
+          // The browser will still try, but with an English voice the
+          // pronunciation is worse than the respelling on the page.
+          status.textContent = 'no ' + base + ' voice installed — use the “say” line';
+        }
+      }
+      pickVoice();
+      // Chrome populates voices asynchronously.
+      synth.addEventListener?.('voiceschanged', pickVoice);
+
+      let active = null;
+      function speak(btn) {
+        const text = btn.getAttribute('data-speak');
+        if (!text) return;
+        synth.cancel();
+        if (active) active.classList.remove('speaking');
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = speechLang;
+        if (voice) u.voice = voice;
+        u.rate = 0.85;
+        btn.classList.add('speaking');
+        active = btn;
+        u.onend = u.onerror = () => btn.classList.remove('speaking');
+        synth.speak(u);
+      }
+      buttons.forEach(b => b.addEventListener('click', () => speak(b)));
+      window.addEventListener('pagehide', () => synth.cancel());
+    }
+
+    // --- Filter ------------------------------------------------------------
+    const input = document.getElementById('phrase-filter');
+    const empty = document.getElementById('filter-empty');
+    const key = document.getElementById('pronunciation-key');
+    const phrases = Array.from(document.querySelectorAll('.phrase'));
+    const sections = Array.from(document.querySelectorAll('[data-category]'));
+
+    function applyFilter() {
+      const q = (input.value || '').trim().toLowerCase();
+      let matches = 0;
+      phrases.forEach(el => {
+        const hit = !q || (el.getAttribute('data-search') || '').includes(q);
+        el.hidden = !hit;
+        if (hit) matches++;
+      });
+      sections.forEach(sec => {
+        const shown = Array.from(sec.querySelectorAll('.phrase')).filter(el => !el.hidden);
+        sec.hidden = shown.length === 0;
+        const badge = sec.querySelector('.category-count');
+        if (badge) {
+          if (!badge.dataset.total) badge.dataset.total = badge.textContent;
+          badge.textContent = q ? String(shown.length) : badge.dataset.total;
+        }
+      });
+      if (key) key.hidden = !!q;
+      if (empty) empty.hidden = matches > 0;
+    }
+
+    if (input) {
+      input.addEventListener('input', applyFilter);
+      // Browsers restore the field's value on back-navigation.
+      if (input.value) applyFilter();
+    }
+  })();
+</script>
+
+<style>
+  .phrases-hero { padding: 3rem 2rem 2rem; text-align: center; border-bottom: 1px solid var(--cream-dark); }
+  .phrases-hero-inner { max-width: 640px; margin: 0 auto; }
+  .phrases-eyebrow { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; }
+  .phrases-title { font-family: var(--font-display); font-size: clamp(2.1rem, 6vw, 3.4rem); font-weight: 300; letter-spacing: -0.02em; margin-bottom: 0.3rem; }
+  .phrases-native { font-family: var(--font-display); font-size: 1.35rem; color: var(--accent); margin-bottom: 1rem; }
+  .phrases-subtitle { font-size: 0.95rem; color: var(--ink-muted); line-height: 1.7; margin-bottom: 1.25rem; }
+  .phrases-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; font-size: 0.75rem; color: var(--ink-faint); letter-spacing: 0.04em; margin-bottom: 1.5rem; }
+  .phrases-meta .dot { opacity: 0.5; }
+
+  .phrases-search { max-width: 420px; margin: 0 auto; }
+  .phrases-search input {
+    width: 100%; padding: 0.65rem 0.9rem;
+    font-family: inherit; font-size: 0.9rem; color: var(--ink);
+    background: white; border: 1px solid var(--cream-dark); border-radius: var(--radius-lg);
+    transition: border-color 0.15s;
+  }
+  .phrases-search input:focus { outline: none; border-color: var(--accent); }
+  .filter-empty { margin-top: 0.75rem; font-size: 0.82rem; color: var(--ink-faint); }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  .section { padding: 2.5rem 2rem; }
+  .section-alt { background: white; }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  .english-note {
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    padding: 1.1rem 1.25rem; border-radius: var(--radius-lg);
+    background: white; border: 1px solid var(--cream-dark);
+    border-left: 3px solid var(--accent);
+  }
+  .english-note-icon { font-size: 1.15rem; line-height: 1.4; }
+  .english-note p { font-size: 0.88rem; color: var(--ink-muted); line-height: 1.65; }
+
+  .category-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--cream-dark); }
+  .category-emoji { font-size: 1.3rem; }
+  .category-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 500; color: var(--ink); flex: 1; }
+  .category-count { font-size: 0.78rem; font-weight: 500; color: var(--ink-faint); background: var(--cream-dark); padding: 0.2rem 0.65rem; border-radius: 20px; }
+  .category-intro { font-size: 0.85rem; color: var(--ink-muted); line-height: 1.65; margin-bottom: 1.25rem; }
+
+  .key-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
+  .key-card { padding: 0.9rem 1rem; border: 1px solid var(--cream-dark); border-radius: var(--radius-lg); background: var(--cream); }
+  .key-sound { font-family: var(--font-display); font-size: 1.05rem; color: var(--accent); }
+  .key-as { font-size: 0.82rem; color: var(--ink); line-height: 1.55; margin-top: 0.25rem; }
+  .key-example { font-size: 0.75rem; color: var(--ink-faint); line-height: 1.5; margin-top: 0.35rem; }
+
+  .phrase-list { display: flex; flex-direction: column; }
+  .phrase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.6rem; }
+
+  .phrase {
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    padding: 0.85rem 0.5rem; border-bottom: 1px solid var(--cream-dark);
+  }
+  .phrase-list .phrase:last-child { border-bottom: none; }
+  /* .phrase sets display:flex, which would otherwise beat the UA [hidden] rule. */
+  .phrase[hidden] { display: none; }
+  .phrase-grid .phrase {
+    border: 1px solid var(--cream-dark); border-radius: var(--radius-lg);
+    background: var(--cream); padding: 0.7rem 0.5rem 0.7rem 0.8rem; gap: 0.4rem;
+  }
+  .section-alt .phrase-grid .phrase { background: var(--cream); }
+
+  .phrase-body { flex: 1; min-width: 0; }
+  .phrase-en { font-size: 0.82rem; color: var(--ink-faint); letter-spacing: 0.02em; }
+  .phrase-native { font-family: var(--font-display); font-size: 1.15rem; color: var(--ink); line-height: 1.4; margin-top: 0.1rem; }
+  /* Jost has no tone-marked vowels (ā ǎ ǔ), so romanizations fall back
+     mid-word and the marks float. A system font carries them properly. */
+  .phrase-romanized {
+    font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.85rem; color: var(--ink-muted); font-style: italic; margin-top: 0.15rem;
+  }
+  .phrase-say { display: flex; align-items: baseline; gap: 0.45rem; margin-top: 0.3rem; flex-wrap: wrap; }
+  .say-label { font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  .say-text { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.85rem; color: var(--ink); letter-spacing: 0.01em; }
+  .phrase-literal { font-size: 0.75rem; color: var(--ink-faint); font-style: italic; margin-top: 0.3rem; }
+  .phrase-note { font-size: 0.8rem; color: var(--ink-muted); line-height: 1.6; margin-top: 0.35rem; }
+
+  .phrase-grid .phrase-native { font-size: 1.05rem; }
+  .phrase-grid .phrase-en { font-size: 0.9rem; font-weight: 500; color: var(--ink); }
+
+  .speak-btn {
+    flex: none; width: 34px; height: 34px; margin-top: 0.15rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; cursor: pointer;
+    background: white; border: 1px solid var(--cream-dark); border-radius: 50%;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  }
+  .speak-btn:hover { border-color: var(--accent); transform: scale(1.06); }
+  .speak-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .speak-btn.speaking { background: var(--accent); border-color: var(--accent); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+  @media (prefers-reduced-motion: reduce) {
+    .speak-btn, .speak-btn.speaking { transition: none; animation: none; }
+  }
+
+  @media (max-width: 600px) {
+    .phrases-hero { padding: 2.5rem 1.25rem 1.5rem; }
+    .section { padding: 1.75rem 1.25rem; }
+    .phrase-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  }
+</style>

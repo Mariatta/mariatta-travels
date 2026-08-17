@@ -24,6 +24,21 @@ import Footer from '../components/Footer.astro';
         <div class="changelog">
           <div class="changelog-entry">
             <div class="changelog-header">
+              <h2 class="changelog-version">v2.4</h2>
+              <span class="changelog-date">August 2026</span>
+              <span class="changelog-tag tag-new">Feature</span>
+            </div>
+
+            <ol class="prompt-list">
+              <li>
+                <span class="prompt-label">A phrasebook for trips where English isn't the local language</span>
+                <p>Every trip page assumed English would do. For Portugal it won't, so trips can now carry a <code>PhraseBook</code> that adds a <strong>Phrases</strong> tab: hello and goodbye, please and thank you, where is…?, what is this?, ordering, prices, numbers, travelling with kids, and what to say if something goes wrong. Each entry shows the local spelling, a respelling written for an English speaker (CAPITALS on the stressed syllable, no IPA), and a 🔊 button that reads it aloud through the browser's own speech synthesis in the right language — no audio files, no external service. If the device has no voice for that language, the page says so rather than mispronouncing the phrase in English. Portugal 2026 got European Portuguese (<em>comboio</em> and <em>casa de banho</em>, not the Brazilian words) and the shelved Taiwan 2026 trip got Mandarin with traditional characters and pinyin, which proved the model works for non-Latin scripts.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-header">
               <h2 class="changelog-version">v2.3</h2>
               <span class="changelog-date">June 2026</span>
               <span class="changelog-tag tag-new">Refinement</span>

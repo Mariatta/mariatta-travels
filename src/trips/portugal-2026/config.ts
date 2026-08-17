@@ -5,6 +5,7 @@ import { aveiro } from './aveiro';
 import { budgetData } from './budget';
 import { checklistData } from './checklist';
 import { stats, tips } from './tips';
+import { phrases } from './phrases';
 
 export const config: TripConfig = {
   id: 'portugal-2026',
@@ -20,10 +21,11 @@ export const config: TripConfig = {
   description: 'A family travel guide to Porto, Lisbon & Aveiro — August 2026',
   accentColor: '#006B3F',
   baseCurrency: 'EUR',
-  sections: ['budget', 'checklist', 'log'],
+  sections: ['budget', 'checklist', 'log', 'phrases'],
   cities: [porto, lisbon, aveiro],
   budget: budgetData,
   checklist: checklistData,
   stats,
   tips,
+  phrases,
 };

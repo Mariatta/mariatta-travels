@@ -15,7 +15,8 @@ src/
 │       ├── <city>.ts     # One file per city (family trips) or a single city (conference trips)
 │       ├── budget.ts     # Exports BudgetCategory[]
 │       ├── checklist.ts  # Exports ChecklistCategory[]
-│       └── tips.ts       # Exports stats + TipCategory[]
+│       ├── tips.ts       # Exports stats + TipCategory[]
+│       └── phrases.ts    # Exports PhraseBook — only for non-English destinations
 ├── layouts/
 │   ├── Layout.astro      # Base HTML head, fonts, theme colour
 │   └── TripLayout.astro  # Wraps Layout, adds two-tier nav + footer + prev/next
@@ -47,7 +48,7 @@ src/
         ├── budget.astro
         ├── checklist.astro
         ├── log.astro     # Quick-entry expense form
-        └── sync.astro    # Import / export JSON
+        └── phrases.astro # Phrasebook (only trips with a `phrases` PhraseBook)
 ```
 
 ## Core concepts
@@ -59,9 +60,10 @@ The shape of a trip. See `src/data/types.ts` for the full definition. Key fields
 - `type` — `'family'` (multi-city vacation, renders CitiesGrid on home) or `'conference'` (single city with `venue`, renders CityView directly)
 - `status` — `'planning'` | `'confirmed'` | `'cancelled'`. `'completed'` is auto-derived when `endDate < today`.
 - `startDate` / `endDate` — ISO `YYYY-MM-DD`. Used for chronological sorting and the auto-`completed` status.
-- `sections` — which section pages this trip has. Almost always `['budget', 'checklist', 'log', 'sync']`. The `about` is only on the site-level, not per trip.
+- `sections` — which section pages this trip has. Almost always `['budget', 'checklist', 'log']`, plus `'phrases'` when the trip has a `phrases` phrasebook. The `about` is only on the site-level, not per trip.
 - `cities` — at least one `CityData`. Multi-city trips render a grid; single-city trips render inline.
 - `stats`, `tips` — optional content for the trip home.
+- `phrases` — optional `PhraseBook`, only for destinations where the local language isn't English.
 
 ### Pluggable section model
 The trip home page (`src/pages/[trip]/index.astro`) composes sections based on the trip shape:
@@ -74,9 +76,12 @@ The city page (`[city].astro`) uses `CityView` with the full hero.
 
 ### Two-tier nav
 - Row 1: site-wide — `✈️ Mariatta Travels · All trips · About` (from `Nav.astro`)
-- Row 2: trip-scoped — `{emoji} {shortTitle} │ Overview · Budget · Checklist · Log · Sync` (from `TripSections.astro`), only inside a trip
+- Row 2: trip-scoped — `{emoji} {shortTitle} │ Overview · Budget · Checklist · Log · Phrases` (from `TripSections.astro`), only inside a trip
 
 The `--accent` CSS variable on `.trip-scope` in `TripLayout` propagates the trip's accent colour to all buttons, active nav states, progress bars, and chart accents inside the trip.
+
+### Phrasebook
+`phrases.astro` renders a trip's `PhraseBook` (`src/trips/<slug>/phrases.ts`) — a pronunciation key, then categories of phrases, each with the local script, an English-speaker respelling (CAPITALS on the stressed syllable, never IPA), and a 🔊 button that speaks it through the browser's `speechSynthesis` using the book's `speechLang`. When no voice for that language is installed, the page says so and the respelling stands on its own — audio is never the only pronunciation cue. Number categories set `layout: 'grid'`. The filter box searches every field at once and updates the per-category counts.
 
 ### localStorage keys
 All trip-scoped data uses the `travels-<kind>-<trip-id>` pattern:

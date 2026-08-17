@@ -8,6 +8,7 @@ export type SectionId =
   | 'budget'
   | 'checklist'
   | 'log'
+  | 'phrases'
   | 'about';
 
 export interface Hotel {
@@ -168,6 +169,59 @@ export interface TipCategory {
   tips: Tip[];
 }
 
+export interface Phrase {
+  /** What you want to say, in English. */
+  en: string;
+  /** How it's written locally, in the local script. */
+  native: string;
+  /** Phonetic respelling for an English speaker. CAPS marks the stressed syllable. */
+  pronunciation: string;
+  /** Romanization when the native script isn't Latin (pinyin, romaji, ...). */
+  romanized?: string;
+  /** Word-for-word meaning, when it explains the phrasing. */
+  literal?: string;
+  /** Usage note — formality, gender agreement, when not to say it. */
+  note?: string;
+  /**
+   * Text handed to the browser's speech synthesis, when `native` isn't what
+   * should be read aloud (e.g. a phrase written with a placeholder).
+   */
+  speak?: string;
+}
+
+export interface PhraseCategory {
+  id: string;
+  title: string;
+  emoji: string;
+  intro?: string;
+  /** 'grid' packs short entries (numbers, days) into columns. Defaults to 'list'. */
+  layout?: 'list' | 'grid';
+  phrases: Phrase[];
+}
+
+/** One line of the "how the letters sound" key at the top of a phrasebook. */
+export interface PronunciationRule {
+  /** The letter, cluster, or tone being explained. */
+  sound: string;
+  /** How to make it, described for an English speaker. */
+  as: string;
+  example?: string;
+}
+
+export interface PhraseBook {
+  /** Language as travellers know it — 'European Portuguese', 'Mandarin Chinese'. */
+  language: string;
+  /** The language's name in itself — 'Português', '中文'. */
+  nativeName: string;
+  /** BCP-47 tag for browser speech synthesis — 'pt-PT', 'zh-TW'. */
+  speechLang: string;
+  intro?: string;
+  /** How much English gets you, and where it doesn't. */
+  englishNote?: string;
+  pronunciationKey?: PronunciationRule[];
+  categories: PhraseCategory[];
+}
+
 export interface TripConfig {
   id: string;
   title: string;
@@ -188,4 +242,6 @@ export interface TripConfig {
   checklist: ChecklistCategory[];
   stats?: TripStat[];
   tips?: TipCategory[];
+  /** Only for trips where the local language isn't English. Drives the Phrases section. */
+  phrases?: PhraseBook;
 }
