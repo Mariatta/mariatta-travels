@@ -19,7 +19,7 @@ const eventsInTrip = cities
       <div class="event-callouts">
         {eventsInTrip.map(({ city, venue }) => (
           <a class="event-callout" href={`${base}${tripId}/${city.slug}/#${'event-venue'}`}>
-            <span class="event-icon" aria-hidden="true">🎤</span>
+            <span class="event-icon" aria-hidden="true">{venue.icon ?? '🎤'}</span>
             <span class="event-meta">
               <span class="event-eyebrow">Event during this trip</span>
               <span class="event-name">{venue.eventName}</span>

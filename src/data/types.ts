@@ -122,6 +122,12 @@ export interface Expense {
 export interface Venue {
   name: string;
   eventName: string;
+  /**
+   * Emoji for the event callout on the trip home. Defaults to 🎤, which suits
+   * a talk-driven conference. Override it for events that aren't about
+   * speaking — a sprint is 💻, a workshop 🛠️.
+   */
+  icon?: string;
   address: string;
   neighbourhood?: string;
   dates: string;

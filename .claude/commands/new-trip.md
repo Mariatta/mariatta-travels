@@ -101,6 +101,8 @@ MapPoint types: `'attraction' | 'hotel' | 'restaurant' | 'ice-cream'`. Use real 
 
 Export `budgetData: BudgetCategory[]` with ~10 categories covering flights, accommodation, inter-city transport, food, local transport, activities, shopping, connectivity, events (if applicable), miscellaneous. Mix `pre-trip` and `during-trip` types. Items use the trip's `baseCurrency` for on-the-ground costs and the home currency (usually CAD) for pre-trip bookings.
 
+**Never add a separate "Tips and gratuities" item.** Mariatta logs each expense at the total she actually paid, tip included, so a standalone tip line double-counts and skews `/analyze-trip` (it reads as under-budget on tips and over on food when nothing was off). Size food, dining, and rideshare items at the tip-inclusive total instead, and write `tip included` in the item's `note`. Tipping *norms* still belong in `tips.ts` as travel advice — say there that the budget figures already include the tip.
+
 ### `checklist.ts`
 
 Export `checklistData: ChecklistCategory[]` with categories covering flights & transport, accommodation, documents & insurance, event-specific items (if applicable), activities & bookings, money & connectivity, packing, pre-departure. For conference trips, include a `Scout ice cream selfie spot near venue 🍦` item in the event category.
