@@ -2,6 +2,7 @@ import type { CityData } from '../../data/types';
 
 export const aveiro: CityData = {
   name: 'Aveiro',
+  country: 'Portugal',
   slug: 'aveiro',
   dates: 'Sep 2 – 5, 2026',
   nights: 3,
