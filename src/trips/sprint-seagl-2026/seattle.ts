@@ -2,6 +2,7 @@ import type { CityData } from '../../data/types';
 
 export const seattle: CityData = {
   name: 'Seattle',
+  country: 'WA, USA',
   slug: 'seattle',
   dates: 'Oct 22 – 25, 2026',
   nights: 3,

@@ -2,6 +2,7 @@ import type { CityData } from '../../data/types';
 
 export const kaohsiungData: CityData = {
   name: 'Kaohsiung',
+  country: 'Taiwan',
   slug: 'kaohsiung',
   dates: 'Sep 2–5',
   nights: 3,

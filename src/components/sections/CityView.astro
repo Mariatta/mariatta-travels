@@ -43,6 +43,9 @@ const mapPointsForRender = city.mapPoints.filter(p => {
 const showHotels = visibleHotels.length > 0;
 const showRestaurants = visibleRestaurants.length > 0;
 
+// Popup map searches need more than a bare place name to resolve correctly.
+const searchHint = city.mapSearchHint || [city.name, city.country].filter(Boolean).join(', ');
+
 let altIdx = 0;
 const nextAltClass = () => (altIdx++ % 2 === 0 ? 'section' : 'section section-alt');
 ---
@@ -62,7 +65,7 @@ const nextAltClass = () => (altIdx++ % 2 === 0 ? 'section' : 'section section-al
     <div class="section-label">Overview</div>
     <h2 class="section-title">{city.name} at a glance</h2>
     <p class="section-intro">Attractions, hotels and restaurants — all on one map.</p>
-    <MapSection mapCenter={city.mapCenter} mapZoom={city.mapZoom} mapPoints={mapPointsForRender} accentColor={city.accentColor} />
+    <MapSection mapCenter={city.mapCenter} mapZoom={city.mapZoom} mapPoints={mapPointsForRender} accentColor={city.accentColor} searchHint={searchHint} />
   </div>
 </section>
 
@@ -117,7 +120,7 @@ const nextAltClass = () => (altIdx++ % 2 === 0 ? 'section' : 'section section-al
       <div class="section-label">Where to Eat</div>
       <h2 class="section-title">Restaurants in {city.name}</h2>
       <div class="cards-grid">
-        {visibleRestaurants.map(r => <RestaurantCard restaurant={r} />)}
+        {visibleRestaurants.map(r => <RestaurantCard restaurant={r} searchHint={searchHint} />)}
       </div>
     </div>
   </section>

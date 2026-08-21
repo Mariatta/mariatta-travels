@@ -2,6 +2,7 @@ import type { CityData } from '../../data/types';
 
 export const longBeach: CityData = {
   name: 'Long Beach',
+  country: 'CA, USA',
   slug: 'long-beach',
   dates: 'May 14 – 19, 2026',
   nights: 5,

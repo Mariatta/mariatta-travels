@@ -2,6 +2,7 @@ import type { CityData } from '../../data/types';
 
 export const vancouver: CityData = {
   name: 'Vancouver',
+  country: 'BC, Canada',
   slug: 'vancouver',
   dates: 'March 21, 2026',
   nights: 0,

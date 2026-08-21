@@ -2,6 +2,7 @@ import type { CityData } from '../../data/types';
 
 export const cultusLake: CityData = {
   name: 'Cultus Lake',
+  country: 'BC, Canada',
   slug: 'cultus-lake',
   dates: 'July 10 – 12, 2026',
   nights: 2,

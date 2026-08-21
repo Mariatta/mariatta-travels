@@ -41,6 +41,11 @@ export interface Restaurant {
   hours?: string;
   bookAhead?: boolean;
   /**
+   * Explicit Google Maps link for the card's ↗. Omit and the card builds a
+   * search from the name plus the city hint, same as the map popups.
+   */
+  mapUrl?: string;
+  /**
    * True for restaurants that are part of the event's official food
    * listing / sponsor guide. Same semantics as Hotel.inEventBlock —
    * untagged entries are personal picks and stay private on public builds.
@@ -81,6 +86,14 @@ export interface MapPoint {
   type: 'attraction' | 'hotel' | 'restaurant' | 'ice-cream';
   lat: number;
   lng: number;
+  /** Street address, shown in the map popup when present. */
+  address?: string;
+  /**
+   * Explicit Google Maps link for the popup. Omit and the popup builds a
+   * search URL from the name plus the city's `name` / `country`, which is
+   * enough for anywhere with an unambiguous name.
+   */
+  mapUrl?: string;
 }
 
 export interface IceCreamSpot {
@@ -143,6 +156,10 @@ export interface Venue {
 
 export interface CityData {
   name: string;
+  /** Disambiguates map-popup searches, e.g. 'Portugal'. */
+  country?: string;
+  /** Overrides the `name, country` suffix when the display name is not a clean search term. */
+  mapSearchHint?: string;
   slug: string;
   dates: string;
   nights: number;

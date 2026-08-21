@@ -2,6 +2,7 @@ import type { CityData } from '../../data/types';
 
 export const santaMonica: CityData = {
   name: 'Santa Monica',
+  country: 'CA, USA',
   slug: 'santa-monica',
   dates: 'Oct 23 – 25, 2026',
   nights: 2,
