@@ -2,6 +2,7 @@ import type { CityData } from '../../data/types';
 
 export const bellingham: CityData = {
   name: 'Bellingham',
+  country: 'WA, USA',
   slug: 'bellingham',
   dates: 'Apr 24 – 26, 2026',
   nights: 2,

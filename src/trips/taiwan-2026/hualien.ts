@@ -2,6 +2,7 @@ import type { CityData } from '../../data/types';
 
 export const hualienData: CityData = {
   name: 'Hualien',
+  country: 'Taiwan',
   slug: 'hualien',
   dates: 'Aug 27–29',
   nights: 2,

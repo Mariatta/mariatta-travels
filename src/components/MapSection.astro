@@ -6,9 +6,11 @@ interface Props {
   mapZoom?: number;
   mapPoints: MapPoint[];
   accentColor: string;
+  /** Appended to popup map searches so 'Doca Peixe' resolves in the right city. */
+  searchHint?: string;
 }
 
-const { mapCenter, mapZoom = 13, mapPoints, accentColor } = Astro.props;
+const { mapCenter, mapZoom = 13, mapPoints, accentColor, searchHint = '' } = Astro.props;
 const mapId = `map-${Math.random().toString(36).slice(2, 8)}`;
 const hasIceCream = mapPoints.some(p => p.type === 'ice-cream');
 ---
@@ -32,6 +34,7 @@ const hasIceCream = mapPoints.some(p => p.type === 'ice-cream');
   data-zoom={mapZoom}
   data-points={JSON.stringify(mapPoints)}
   data-accent={accentColor}
+  data-hint={searchHint}
 >
   (function() {
     const script = document.currentScript;
@@ -40,6 +43,57 @@ const hasIceCream = mapPoints.some(p => p.type === 'ice-cream');
     const zoom = Number(script.getAttribute('data-zoom'));
     const points = JSON.parse(script.getAttribute('data-points'));
     const accent = script.getAttribute('data-accent');
+    const hint = script.getAttribute('data-hint') || '';
+
+    // Points rarely carry an explicit mapUrl — a name-plus-city search lands on
+    // the real Google place card (address, hours, reviews) for everything here.
+    function mapsUrl(pt) {
+      if (pt.mapUrl) return pt.mapUrl;
+      const query = hint ? pt.name + ', ' + hint : pt.name;
+      return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
+    }
+
+    function popupFor(pt, label, color) {
+      const box = document.createElement('div');
+      box.style.minWidth = '150px';
+      box.style.lineHeight = '1.45';
+
+      const title = document.createElement('strong');
+      title.textContent = pt.name;
+      title.style.display = 'block';
+      title.style.fontSize = '0.95em';
+      box.appendChild(title);
+
+      const meta = document.createElement('span');
+      meta.textContent = label;
+      meta.style.fontSize = '0.85em';
+      meta.style.color = '#666';
+      box.appendChild(meta);
+
+      if (pt.address) {
+        const addr = document.createElement('span');
+        addr.textContent = pt.address;
+        addr.style.display = 'block';
+        addr.style.fontSize = '0.85em';
+        addr.style.color = '#666';
+        addr.style.marginTop = '0.15rem';
+        box.appendChild(addr);
+      }
+
+      const link = document.createElement('a');
+      link.href = mapsUrl(pt);
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = 'Open in Google Maps \u2197';
+      link.style.display = 'inline-block';
+      link.style.marginTop = '0.5rem';
+      link.style.fontSize = '0.85em';
+      link.style.fontWeight = '600';
+      link.style.color = color;
+      box.appendChild(link);
+
+      return box;
+    }
 
     function init() {
       const el = document.getElementById(mapId);
@@ -78,8 +132,10 @@ const hasIceCream = mapPoints.some(p => p.type === 'ice-cream');
           }),
         }).addTo(map);
 
-        const label = pt.type.charAt(0).toUpperCase() + pt.type.slice(1);
-        marker.bindPopup('<strong>' + pt.name + '</strong><br><span style="font-size:0.85em;color:#666;">' + label + '</span>');
+        const label = pt.type === 'ice-cream'
+          ? 'Ice cream'
+          : pt.type.charAt(0).toUpperCase() + pt.type.slice(1);
+        marker.bindPopup(popupFor(pt, label, color));
       });
     }
 

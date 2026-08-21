@@ -2,6 +2,7 @@ import type { CityData } from '../../data/types';
 
 export const sanFrancisco: CityData = {
   name: 'San Francisco',
+  country: 'CA, USA',
   slug: 'san-francisco',
   dates: 'Oct 18 – 23, 2026',
   nights: 5,

@@ -2,6 +2,8 @@ import type { CityData } from '../../data/types';
 
 export const taichungData: CityData = {
   name: 'Sun Moon Lake & Taichung',
+  country: 'Taiwan',
+  mapSearchHint: 'Taichung, Taiwan',
   slug: 'taichung',
   dates: 'Aug 29–31',
   nights: 2,
