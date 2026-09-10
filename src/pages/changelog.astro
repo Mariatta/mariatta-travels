@@ -24,6 +24,21 @@ import Footer from '../components/Footer.astro';
         <div class="changelog">
           <div class="changelog-entry">
             <div class="changelog-header">
+              <h2 class="changelog-version">v2.5</h2>
+              <span class="changelog-date">September 2026</span>
+              <span class="changelog-tag tag-new">Feature</span>
+            </div>
+
+            <ol class="prompt-list">
+              <li>
+                <span class="prompt-label">Turn a credit card statement into logged expenses</span>
+                <p>The expense analysis assumed every purchase had been typed into the Log page during the trip. Almost none of Portugal was: the real record of what got spent arrived the way a bank hands it over, as a CSV of credit card statement rows. So the ask wasn't a one-off conversion but a script that could be re-run on the next statement. <code>npm run csv-to-expenses</code> reads a statement CSV and writes the same v2 file the Sync page exports, so it feeds <code>/analyze-trip</code> directly and can also be imported straight back into the browser. Parsing was never the hard part. A statement names the merchant and never the reason, so <code>O VALENTIM, 233.32, Aug 27</code> has to land on the Matosinhos beach day rather than becoming one more Porto dinner, and three separate <code>COMBOIOS</code> charges have to split across two train legs and a day trip to Coimbra. That judgment lives in a per-trip rules file, where merchant, city, date and amount patterns map onto real budget line items and every mapping is checked against the trip's own <code>budget.ts</code>, so a rule can point at a line that exists or the run fails: it can't quietly invent a category. Rows the rules had to guess at are printed after each run for a second opinion, and every row's id is derived from its contents, so re-importing merges rather than duplicating. Portugal's 125 statement rows mapped in a single pass.</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-header">
               <h2 class="changelog-version">v2.4</h2>
               <span class="changelog-date">August 2026</span>
               <span class="changelog-tag tag-new">Feature</span>
