@@ -103,6 +103,7 @@ Manually: create `src/trips/<slug>/` with `config.ts`, city data files, `budget.
 After a trip ends, its real spending is analyzed and fed back into future budgets.
 
 - **Exports** (real, logged expenses) are exported from the site's Sync page and saved to `expense-data/<trip-id>.json`. **This folder is gitignored** — raw financial data never enters this public repo (only `expense-data/README.md` is tracked).
+- **Card statements** skip the Log page entirely: `npm run csv-to-expenses -- <csv> --trip <trip-id>` converts a bank/credit-card CSV into the same v2 export shape. Merchant → budget line-item mapping lives in `scripts/expense-rules/<trip-id>.mjs` (falling back to `default.mjs`), validated against the trip's real `budget.ts`; row ids are content-derived so a re-import in Merge mode never duplicates. See `scripts/expense-rules/README.md`.
 - Run **`/analyze-trip <trip-id>`** (or `all`) to compare actuals against the trip's `budget.ts`, normalized to CAD: estimate-vs-actual per category + normalized unit costs. See `.claude/commands/analyze-trip.md`.
 - Distilled calibration factors live in memory (not the repo) and improve `/new-trip` budgets over time. Conference **meal policy** matters when sizing food — some provide lunch (PyCon), most don't (SeaGL, PyBeach).
 - Goal: a curated, rounded **year-end conference-expenses blog post** (see `IDEAS.md`). Only approved, rounded figures are ever published — never raw line items.
@@ -114,6 +115,8 @@ npm install      # first time
 npm run dev      # dev server (likely :4321 or next free port)
 npm run build    # static build to dist/
 npm run preview  # preview the built site
+
+npm run csv-to-expenses -- <csv> --trip <trip-id>   # card statement CSV → expense-data/<trip-id>.json
 ```
 
 ## Conventions

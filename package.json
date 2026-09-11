@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "csv-to-expenses": "node scripts/csv-to-expenses.mjs"
   },
   "dependencies": {
     "astro": "^5.18.1"
